@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'authentication/blocs/authentication_bloc.dart';
-import 'authentication/ui/screens/login_page.dart';
+import 'authentication/ui/widgets/authentication_root_page.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(BlocProvider<AuthenticationBloc>(
+      bloc: AuthenticationBloc(),
+      child: MyApp(),
+    ));
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -22,10 +25,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: BlocProvider<AuthenticationBloc>(
-        bloc: AuthenticationBloc(),
-        child: LoginPage(),
-      ),
+      home: AuthenticationRootPage(),
     );
   }
 }

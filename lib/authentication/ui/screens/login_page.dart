@@ -3,10 +3,6 @@ import 'package:fishing_boats_app/widgets/bloc_provider.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
-  final AuthenticationBloc authenticationBloc;
-
-  const LoginPage({Key key, this.authenticationBloc}) : super(key: key);
-
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -16,7 +12,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    _authenticationBloc = widget.authenticationBloc;
     super.initState();
   }
 
@@ -34,16 +29,9 @@ class _LoginPageState extends State<LoginPage> {
         child: ListView(
           children: <Widget>[
             Container(
-              margin: EdgeInsets.only(top: 50.0, left: 20.0),
+              margin: EdgeInsets.only(top: 75.0, left: 20.0),
               child: Text(
-                "SHIP's",
-                style: TextStyle(fontSize: 30.0),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(top: 5.0, left: 20.0),
-              child: Text(
-                "ORDERS",
+                "PEDIDOS",
                 style: TextStyle(fontSize: 30.0),
               ),
             ),
@@ -51,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
               child: Container(
                 height: 300.0,
                 width: 300.0,
-                margin: EdgeInsets.only(top: 50.0),
+                margin: EdgeInsets.only(top: 75.0),
                 child: Card(
                   elevation: 5.0,
                   child: Column(

@@ -11,6 +11,7 @@ class AuthenticationFishBackEnd {
     if (response.statusCode == 200) {
       return User.fromFishBackEndApiRest(json.decode(response.body));
     } else {
+      if (response.statusCode == 404) return null;
       throw Exception('Failed to login. Status: ${response.statusCode}');
     }
   }

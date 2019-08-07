@@ -8,6 +8,7 @@ class AuthenticationBloc extends Object implements BlocBase {
   final _password = BehaviorSubject<String>();
   final _logging = BehaviorSubject<bool>();
   final _userLogged = BehaviorSubject<User>();
+  final _message = BehaviorSubject<String>();
   final AuthenticationRepository _authenticationRepository =
       AuthenticationRepository();
 
@@ -17,6 +18,10 @@ class AuthenticationBloc extends Object implements BlocBase {
   Stream<String> get password => _password.stream;
 
   Stream<bool> get logging => _logging.stream;
+
+  ValueObservable<User> get userLogged => _userLogged.stream;
+
+  Observable<String> get messenger => _message.stream;
 
   Stream<bool> get validForm =>
       Observable.combineLatest2(user, password, (a, b) {
@@ -40,13 +45,19 @@ class AuthenticationBloc extends Object implements BlocBase {
     await _authenticationRepository
         .logIn(_user.value, _password.value)
         .then((user) {
-      _userLogged.sink.add(user);
-      print(user.toString());
-    }).catchError((error){
-      print(error.toString());
-      _logging.sink.add(false);
-    });
+          if (user != null) return _userLogged.sink.add(user);
+          return _message.sink.add('Error: Usuario o clave incorrecta.');
+        })
+        .timeout(Duration(seconds: 15))
+        .catchError((error) {
+          _message.sink.add('Error: ${error.toString()}');
+          _logging.sink.add(false);
+        });
     _logging.sink.add(false);
+  }
+
+  Future<void> logOut() async {
+    _userLogged.sink.add(null);
   }
 
   @override
@@ -54,6 +65,7 @@ class AuthenticationBloc extends Object implements BlocBase {
     _user.close();
     _password.close();
     _userLogged.close();
+    _message.close();
     _logging.close();
   }
 }
