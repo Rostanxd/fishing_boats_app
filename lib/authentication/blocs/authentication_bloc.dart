@@ -1,3 +1,4 @@
+import 'package:fishing_boats_app/authentication/models/role.dart';
 import 'package:fishing_boats_app/authentication/models/user.dart';
 import 'package:fishing_boats_app/authentication/resources/authentication_repository.dart';
 import 'package:fishing_boats_app/models/bloc_base.dart';
@@ -9,6 +10,7 @@ class AuthenticationBloc extends Object implements BlocBase {
   final _logging = BehaviorSubject<bool>();
   final _userLogged = BehaviorSubject<User>();
   final _message = BehaviorSubject<String>();
+  final _accessByRole = BehaviorSubject<List<AccessByRole>>();
   final AuthenticationRepository _authenticationRepository =
       AuthenticationRepository();
 
@@ -21,6 +23,8 @@ class AuthenticationBloc extends Object implements BlocBase {
 
   ValueObservable<User> get userLogged => _userLogged.stream;
 
+  Observable<List<AccessByRole>> get accessByRole => _accessByRole.stream;
+
   Observable<String> get messenger => _message.stream;
 
   Stream<bool> get validForm =>
@@ -30,6 +34,8 @@ class AuthenticationBloc extends Object implements BlocBase {
       });
 
   /// Functions
+  Function(String) get changeMessage => _message.add;
+
   void changeUser(value) {
     if (value == '') return _user.sink.add(null);
     _user.sink.add(value);
@@ -45,8 +51,11 @@ class AuthenticationBloc extends Object implements BlocBase {
     await _authenticationRepository
         .logIn(_user.value, _password.value)
         .then((user) {
-          if (user != null) return _userLogged.sink.add(user);
-          return _message.sink.add('Error: Usuario o clave incorrecta.');
+          if (user == null)
+            return _message.sink.add('Error: Usuario o clave incorrecta.');
+          if (user.role == null)
+            return _message.sink.add('Usuario sin rol asignado');
+          return _userLogged.sink.add(user);
         })
         .timeout(Duration(seconds: 15))
         .catchError((error) {
@@ -60,11 +69,20 @@ class AuthenticationBloc extends Object implements BlocBase {
     _userLogged.sink.add(null);
   }
 
+  Future<void> fetchAccessByUser() async {
+    await _authenticationRepository
+        .fetchAccessByRole(_userLogged.value.role)
+        .then((access) {
+      _accessByRole.sink.add(access);
+    });
+  }
+
   @override
   void dispose() {
     _user.close();
     _password.close();
     _userLogged.close();
+    _accessByRole.close();
     _message.close();
     _logging.close();
   }

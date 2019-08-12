@@ -21,32 +21,19 @@ class _AuthenticationRootPageState extends State<AuthenticationRootPage> {
 
   @override
   Widget build(BuildContext context) {
-    /// Control the message in the dialog
-    _authenticationBloc.messenger.listen((message) {
-      if (message != null)
-        showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Inicio de sesión'),
-                content: Text(message),
-                actions: <Widget>[
-                  FlatButton(
-                    child: Text('Cerrar'),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                ],
-              );
-            });
-    });
-
-    return StreamBuilder(
-      stream: _authenticationBloc.userLogged,
-      builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
-        return snapshot.hasData ? HomePage() : LoginPage();
-      },
+    return MaterialApp(
+      title: 'Fishing boats App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: StreamBuilder(
+        stream: _authenticationBloc.userLogged,
+        builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
+          return snapshot.hasData && snapshot.data != null
+              ? HomePage()
+              : LoginPage();
+        },
+      ),
     );
   }
 }

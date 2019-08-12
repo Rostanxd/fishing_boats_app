@@ -11,7 +11,6 @@ void main() => runApp(BlocProvider<AuthenticationBloc>(
     ));
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     /// To set-up vertical orientation (portrait).
@@ -20,12 +19,6 @@ class MyApp extends StatelessWidget {
       DeviceOrientation.portraitDown,
     ]);
 
-    return MaterialApp(
-      title: 'Fishing boats App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: AuthenticationRootPage(),
-    );
+    return AuthenticationRootPage();
   }
 }

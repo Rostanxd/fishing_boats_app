@@ -1,5 +1,7 @@
 import 'package:fishing_boats_app/authentication/blocs/authentication_bloc.dart';
+import 'package:fishing_boats_app/authentication/models/role.dart';
 import 'package:fishing_boats_app/authentication/models/user.dart';
+import 'package:fishing_boats_app/orders/ui/screens/order_page.dart';
 import 'package:fishing_boats_app/widgets/bloc_provider.dart';
 import 'package:flutter/material.dart';
 
@@ -9,8 +11,6 @@ class UserDrawer extends StatefulWidget {
 }
 
 class _UserDrawerState extends State<UserDrawer> {
-  final List<Widget> _listChildren = List<Widget>();
-
   AuthenticationBloc _authenticationBloc;
 
   User _user;
@@ -18,6 +18,10 @@ class _UserDrawerState extends State<UserDrawer> {
   @override
   void didChangeDependencies() {
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
+
+    /// Fetch the access
+    _authenticationBloc.fetchAccessByUser();
+
     super.didChangeDependencies();
   }
 
@@ -25,11 +29,84 @@ class _UserDrawerState extends State<UserDrawer> {
   Widget build(BuildContext context) {
     _user = _authenticationBloc.userLogged.value;
 
-    _loadDrawer(context);
     return Drawer(
-      elevation: 5.0,
-      child: ListView(children: _listChildren),
-    );
+        elevation: 5.0,
+        child: ListView(
+          children: <Widget>[
+            _header(),
+            ListTile(
+              title: Text('Home'),
+              leading: Icon(Icons.home),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            Divider(),
+            StreamBuilder(
+              stream: _authenticationBloc.accessByRole,
+              builder: (BuildContext context,
+                  AsyncSnapshot<List<AccessByRole>> snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.waiting:
+                    return Container(
+                      width: 20.0,
+                      height: 20.0,
+                      margin: EdgeInsets.only(left: 20.0),
+                      child: CircularProgressIndicator(),
+                    );
+                    break;
+                  default:
+                    if (snapshot.hasData &&
+                        snapshot.data[0].program.code == '001') {
+                      return ListTile(
+                        title: Text('Pedidos'),
+                        leading: Icon(Icons.receipt),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => OrderPage(
+                                        authenticationBloc: _authenticationBloc,
+                                      )));
+                        },
+                      );
+                    }
+                    return Container(
+                      margin:
+                          EdgeInsets.only(left: 20.0, top: 10.0, bottom: 10.0),
+                      child: Text('Usuario sin accesos.'),
+                    );
+                }
+              },
+            ),
+            Divider(),
+            ListTile(
+              title: Text('Salir'),
+              leading: Icon(Icons.exit_to_app),
+              onTap: () {
+                /// Hidden the user drawer
+                Navigator.pop(context);
+
+                /// Calling the function to sign out
+                _authenticationBloc.logOut();
+              },
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.only(right: 10.0),
+                  child: Text(
+                    'v0.1.0',
+                    style: TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold),
+                  ),
+                )
+              ],
+            )
+          ],
+        ));
   }
 
   Widget _header() {
@@ -70,6 +147,12 @@ class _UserDrawerState extends State<UserDrawer> {
                         style: TextStyle(color: Colors.black, fontSize: 16.0),
                       ),
                     ),
+                    Container(
+                      child: Text(
+                        '${_user.role.name}',
+                        style: TextStyle(color: Colors.black, fontSize: 16.0),
+                      ),
+                    ),
                   ],
                 )
               ],
@@ -83,57 +166,5 @@ class _UserDrawerState extends State<UserDrawer> {
               fit: BoxFit.cover,
               image: AssetImage('assets/img/fishing_boat_marine.jpg'))),
     );
-  }
-
-  void _loadDrawer(BuildContext context) {
-    _listChildren.clear();
-
-    /// Adding the header
-    _listChildren.add(_header());
-
-    _listChildren.add(ListTile(
-      title: Text('Home'),
-      leading: Icon(Icons.home),
-      onTap: () {
-        Navigator.pop(context);
-      },
-    ));
-
-    _listChildren.add(ListTile(
-      title: Text('Pedidos'),
-      leading: Icon(Icons.receipt),
-      onTap: () {
-        Navigator.pop(context);
-      },
-    ));
-
-    /// Adding options by the profile
-    _listChildren.add(Divider());
-
-    /// Adding exit option
-    _listChildren.add(ListTile(
-      title: Text('Salir'),
-      leading: Icon(Icons.exit_to_app),
-      onTap: () {
-        /// Hidden the user drawer
-        Navigator.pop(context);
-
-        /// Calling the function to sign out
-        _authenticationBloc.logOut();
-      },
-    ));
-
-    _listChildren.add(Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: <Widget>[
-        Container(
-          margin: EdgeInsets.only(right: 10.0),
-          child: Text(
-            'v0.1.0',
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-          ),
-        )
-      ],
-    ));
   }
 }

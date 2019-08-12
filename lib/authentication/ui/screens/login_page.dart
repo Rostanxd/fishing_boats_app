@@ -18,6 +18,27 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void didChangeDependencies() {
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
+    _authenticationBloc.changeMessage(null);
+    /// Control the message in the dialog
+    _authenticationBloc.messenger.listen((message) {
+      if (message != null)
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Inicio de sesión'),
+                content: Text(message),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text('Cerrar'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              );
+            });
+    });
     super.didChangeDependencies();
   }
 
