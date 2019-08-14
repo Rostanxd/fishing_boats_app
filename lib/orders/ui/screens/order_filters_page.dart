@@ -18,8 +18,8 @@ class OrderFilterPage extends StatefulWidget {
 class _OrderFilterPageState extends State<OrderFilterPage> {
   OrderPageBloc _orderPageBloc;
   DateTime _fromDefaultDate = DateTime.now();
-//  TextEditingController _fromDateCtrl = TextEditingController();
-//  TextEditingController _toDateCtrl = TextEditingController();
+  TextEditingController _observationCtrl = TextEditingController();
+
   DateTime _now = new DateTime.now();
   final formatter = new DateFormat('yyyy-MM-dd');
 
@@ -58,6 +58,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
   @override
   void initState() {
     _orderPageBloc = widget._orderPageBloc;
+    _observationCtrl.text = _orderPageBloc.observation.value;
     super.initState();
   }
 
@@ -77,6 +78,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
               icon: Icon(Icons.restore_from_trash),
               onPressed: () {
                 _orderPageBloc.cleanFilters();
+                _observationCtrl.text = '';
               }),
           IconButton(
               icon: Icon(Icons.check),
@@ -158,6 +160,93 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
               },
             ),
             Divider(),
+            Container(
+              margin: EdgeInsets.only(left: 15.0, top: 10.0),
+              child: Text('Estado'),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.only(right: 5.0),
+                  child: StreamBuilder(
+                      stream: _orderPageBloc.state,
+                      builder: (BuildContext context,
+                          AsyncSnapshot<String> snapshot) {
+                        return RaisedButton(
+                          color:
+                              snapshot.data == '' ? Colors.grey : Colors.grey,
+                          child: Text('Todos'),
+                          onPressed: () {
+                            _orderPageBloc.changeState('');
+                          },
+                        );
+                      }),
+                ),
+                Container(
+                  margin: EdgeInsets.only(right: 5.0),
+                  child: StreamBuilder(
+                      stream: _orderPageBloc.state,
+                      builder: (BuildContext context,
+                          AsyncSnapshot<String> snapshot) {
+                        return RaisedButton(
+                          color: snapshot.data == 'P'
+                              ? Colors.blueGrey
+                              : Colors.grey,
+                          child: Text('Pendientes'),
+                          onPressed: () {
+                            _orderPageBloc.changeState('P');
+                          },
+                        );
+                      }),
+                ),
+                Container(
+                  margin: EdgeInsets.only(right: 5.0),
+                  child: StreamBuilder(
+                      stream: _orderPageBloc.state,
+                      builder: (BuildContext context,
+                          AsyncSnapshot<String> snapshot) {
+                        return RaisedButton(
+                          color: snapshot.data == 'A'
+                              ? Colors.blueAccent
+                              : Colors.grey,
+                          child: Text('Activos'),
+                          onPressed: () {
+                            _orderPageBloc.changeState('A');
+                          },
+                        );
+                      }),
+                ),
+                Container(
+                  child: StreamBuilder(
+                      stream: _orderPageBloc.state,
+                      builder: (BuildContext context,
+                          AsyncSnapshot<String> snapshot) {
+                        return RaisedButton(
+                          color: snapshot.data == 'X'
+                              ? Colors.redAccent
+                              : Colors.grey,
+                          child: Text('Anulados'),
+                          onPressed: () {
+                            _orderPageBloc.changeState('X');
+                          },
+                        );
+                      }),
+                ),
+              ],
+            ),
+            Divider(),
+            Container(
+              margin: EdgeInsets.only(left: 15.0, top: 10.0),
+              child: Text('Observación'),
+            ),
+            Container(
+              padding: EdgeInsets.only(left: 15.0, right: 15.0),
+              child: TextField(
+                controller: _observationCtrl,
+                onChanged: _orderPageBloc.changeObservation,
+              ),
+            ),
           ],
         ),
       ),

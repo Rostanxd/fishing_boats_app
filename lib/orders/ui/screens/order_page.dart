@@ -1,6 +1,7 @@
 import 'package:fishing_boats_app/authentication/blocs/authentication_bloc.dart';
 import 'package:fishing_boats_app/orders/blocs/order_page_bloc.dart';
 import 'package:fishing_boats_app/orders/models/order.dart';
+import 'package:fishing_boats_app/orders/ui/screens/order_detail_page.dart';
 import 'package:fishing_boats_app/widgets/custom_circular_progress.dart';
 import 'package:flutter/material.dart';
 
@@ -22,6 +23,7 @@ class _OrderPageState extends State<OrderPage> {
   void initState() {
     _orderPageBloc = OrderPageBloc();
     _orderPageBloc.cleanFilters();
+    _orderPageBloc.fetchOrders();
     _orderPageBloc.changeUser(widget.authenticationBloc.userLogged.value);
     super.initState();
   }
@@ -48,6 +50,13 @@ class _OrderPageState extends State<OrderPage> {
                               OrderFilterPage(_orderPageBloc)));
                 })
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            OrderDetailPage();
+          },
+          child: Icon(Icons.add),
+          backgroundColor: Colors.blueAccent,
         ),
         body: Container(
           child: StreamBuilder(

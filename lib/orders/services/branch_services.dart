@@ -6,15 +6,23 @@ import 'package:fishing_boats_app/orders/models/branch.dart';
 import 'package:http/http.dart' as http;
 
 class BranchApi {
+  final _httpClient = new http.Client();
+
   Future<List<Branch>> fetchBranches(String name) async {
     List<Branch> branchList = List<Branch>();
     List data;
 
-    final response = await http
-        .get('${Connection.host}:${Connection.port}/orders/branches/$name');
+    final response = await _httpClient.get(
+        '${Connection.host}:${Connection.port}/orders/branches/$name',
+        headers: {
+          "Content-type": "application/json",
+          "charset": "utf-8",
+          "Accept-Charset": "utf-8"
+        });
 
     if (response.statusCode == 200) {
-      data = json.decode(response.body);
+      data = json.decode(utf8.decode(response.bodyBytes));
+      print(data.toString());
       data.forEach((d) {
         branchList.add(Branch.fromFishBackEndApiRest(d));
       });
@@ -32,9 +40,9 @@ class BranchApi {
     final response = await http.get(
         '${Connection.host}:${Connection.port}/orders/branches_by_user/${user.code}/$name');
 
-    if (response.statusCode == 200){
-      data = json.decode(response.body);
-      data.forEach((d){
+    if (response.statusCode == 200) {
+      data = json.decode(utf8.decode(response.bodyBytes));
+      data.forEach((d) {
         branchList.add(Branch.fromFishBackEndApiRest(d['branch']));
       });
     } else {

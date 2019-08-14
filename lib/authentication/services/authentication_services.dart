@@ -10,7 +10,8 @@ class AuthenticationFishBackEnd {
     final response = await http.get(
         '${Connection.host}:${Connection.port}/maintenance/login/$user/$password');
     if (response.statusCode == 200) {
-      return User.fromFishBackEndApiRest(json.decode(response.body));
+      return User.fromFishBackEndApiRest(
+          json.decode(utf8.decode(response.bodyBytes)));
     } else {
       if (response.statusCode == 404) return null;
       throw Exception('Failed to login. Status: ${response.statusCode}');
@@ -24,7 +25,7 @@ class AuthenticationFishBackEnd {
         '${Connection.host}:${Connection.port}/maintenance/accessByRole/${role.code}');
 
     if (response.statusCode == 200) {
-      data = json.decode(response.body);
+      data = json.decode(utf8.decode(response.bodyBytes));
       data.forEach((d) {
         accessList.add(AccessByRole.fromFishBackEndApiRest(d));
       });

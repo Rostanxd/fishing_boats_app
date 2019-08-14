@@ -13,7 +13,7 @@ class WarehouseApi {
         '${Connection.host}:${Connection.port}/orders/warehouses/$name');
 
     if (response.statusCode == 200) {
-      data = json.decode(response.body);
+      data = json.decode(utf8.decode(response.bodyBytes));
       data.forEach((d) {
         warehouseList.add(Warehouse.fromFishBackEndApiRest(d));
       });
