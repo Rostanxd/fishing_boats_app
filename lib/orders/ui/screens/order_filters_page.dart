@@ -19,6 +19,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
   OrderPageBloc _orderPageBloc;
   DateTime _fromDefaultDate = DateTime.now();
   TextEditingController _observationCtrl = TextEditingController();
+  TextEditingController _providerCtrl = TextEditingController();
 
   DateTime _now = new DateTime.now();
   final formatter = new DateFormat('yyyy-MM-dd');
@@ -152,7 +153,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                   title: Text(snapshot.hasData
                       ? formatter.format(snapshot.data)
                       : 'Ninguno'),
-                  subtitle: Text('Fecha desde'),
+                  subtitle: Text('Fecha registro desde'),
                   trailing: Icon(Icons.navigate_next),
                   onTap: () {
                     _selectFromDate();
@@ -169,7 +170,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                   title: Text(snapshot.hasData
                       ? formatter.format(snapshot.data)
                       : 'Ninguno'),
-                  subtitle: Text('Fecha hasta'),
+                  subtitle: Text('Fecha registro hasta'),
                   trailing: Icon(Icons.navigate_next),
                   onTap: () {
                     _selectToDate();
@@ -228,7 +229,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                           color: snapshot.data == 'A'
                               ? Colors.blueAccent
                               : Colors.grey,
-                          child: Text('Activos'),
+                          child: Text('Aprobado'),
                           onPressed: () {
                             _orderPageBloc.changeState('A');
                           },
@@ -265,6 +266,19 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                 onChanged: _orderPageBloc.changeObservation,
               ),
             ),
+            Divider(),
+            Container(
+              margin: EdgeInsets.only(left: 15.0, top: 10.0),
+              child: Text('Proveedor'),
+            ),
+            Container(
+              padding: EdgeInsets.only(left: 15.0, right: 15.0),
+              child: TextField(
+                controller: _providerCtrl,
+                onChanged: _orderPageBloc.changeProvider,
+              ),
+            ),
+            SizedBox(height: 20.0,)
           ],
         ),
       ),

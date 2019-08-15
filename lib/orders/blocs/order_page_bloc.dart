@@ -22,6 +22,7 @@ class OrderPageBloc extends Object implements BlocBase {
   final _dateTo = BehaviorSubject<DateTime>();
   final _state = BehaviorSubject<String>();
   final _observation = BehaviorSubject<String>();
+  final _providerName = BehaviorSubject<String>();
   final _orders = BehaviorSubject<List<Order>>();
   final _message = BehaviorSubject<String>();
   final OrdersRepository _ordersRepository = OrdersRepository();
@@ -52,6 +53,8 @@ class OrderPageBloc extends Object implements BlocBase {
 
   ValueObservable<String> get observation => _observation.stream;
 
+  ValueObservable<String> get provider => _providerName.stream;
+
   /// Functions
   Stream<List<Warehouse>> get warehouses => _warehouseSearch
           .debounce(const Duration(milliseconds: 500))
@@ -72,15 +75,22 @@ class OrderPageBloc extends Object implements BlocBase {
       });
 
   Stream<List<Warehouse>> get travels => _travelSearch
-      .debounce(const Duration(milliseconds: 500))
-      .switchMap((terms) async* {
-    yield await _ordersRepository.fetchTravels(terms);
-  });
+          .debounce(const Duration(milliseconds: 500))
+          .switchMap((terms) async* {
+        yield await _ordersRepository.fetchTravels(terms);
+      });
 
   Future<void> fetchOrders() async {
     await _ordersRepository
-        .fetchOrders(_warehouseSelected.value, _branchSelected.value,
-            _dateFrom.value, _dateTo.value, _state.value, _observation.value)
+        .fetchOrders(
+            _warehouseSelected.value,
+            _branchSelected.value,
+            _travelSelected.value,
+            _dateFrom.value,
+            _dateTo.value,
+            _state.value,
+            _observation.value,
+            _providerName.value)
         .timeout(Duration(seconds: 30))
         .then((data) {
       _orders.sink.add(data);
@@ -111,13 +121,17 @@ class OrderPageBloc extends Object implements BlocBase {
 
   Function(String) get changeObservation => _observation.add;
 
+  Function(String) get changeProvider => _providerName.add;
+
   void cleanFilters() {
     _warehouseSelected.sink.add(null);
     _branchSelected.sink.add(null);
+    _travelSelected.sink.add(null);
     _dateFrom.sink.add(DateTime.now());
     _dateTo.sink.add(DateTime.now());
     _state.sink.add('');
     _observation.sink.add('');
+    _providerName.sink.add('');
   }
 
   @override
@@ -137,6 +151,7 @@ class OrderPageBloc extends Object implements BlocBase {
     _dateTo.close();
     _state.close();
     _observation.close();
+    _providerName.close();
     _orders.close();
     _message.close();
   }

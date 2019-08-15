@@ -9,10 +9,18 @@ import 'package:intl/intl.dart';
 class OrderApi {
   final formatter = new DateFormat('yyyy-MM-dd');
 
-  Future<List<Order>> fetchOrders(Warehouse warehouse, Branch branch,
-      DateTime dateFrom, DateTime dateTo, String state, String obs) async {
+  Future<List<Order>> fetchOrders(
+      Warehouse warehouse,
+      Branch branch,
+      Warehouse travel,
+      DateTime dateFrom,
+      DateTime dateTo,
+      String state,
+      String obs,
+      String providerName) async {
     String warehouseId = warehouse != null ? warehouse.code : '';
     String branchId = branch != null ? branch.code : '';
+    String travelId = travel != null ? travel.code : '';
     String dateFromSt = formatter.format(dateFrom);
     String dateToSt = formatter.format(dateTo);
     List<Order> orderList = List<Order>();
@@ -23,7 +31,7 @@ class OrderApi {
 
     final response = await http.get(
         '${Connection.host}:${Connection.port}/orders/list/'
-            '$dateFromSt/$dateToSt/$warehouseId/$branchId/$state/$obs/');
+        '$dateFromSt/$dateToSt/$warehouseId/$branchId/$travelId/$state/$obs/$providerName/');
 
     if (response.statusCode == 200) {
       data = json.decode(utf8.decode(response.bodyBytes));

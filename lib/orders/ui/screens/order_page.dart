@@ -83,17 +83,25 @@ class _OrderPageState extends State<OrderPage> {
 
                   return ListView.separated(
                       itemBuilder: (BuildContext context, int index) {
-                        return ListTile(
-                          leading: _evaluateOrder(snapshot.data[index].state),
-                          title: Text(
-                              'No. ${snapshot.data[index].id.toString()} - ${snapshot.data[index].branch.name}'),
-                          subtitle: Text('${snapshot.data[index].observation}'),
-                          trailing: Icon(Icons.navigate_next),
-                          onTap: () {},
+                        return Container(
+                          color:
+                              _evaluateOrderColor(snapshot.data[index].state),
+                          child: ListTile(
+                            leading: _evaluateOrder(snapshot.data[index].state),
+                            title: Text(
+                                'No. ${snapshot.data[index].id.toString()} - ${snapshot.data[index].branch.name}'),
+                            subtitle: snapshot.data[index].observation.length >
+                                    35
+                                ? Text(
+                                    '${snapshot.data[index].observation.substring(0, 30)}...')
+                                : Text('${snapshot.data[index].observation}'),
+                            trailing: Icon(Icons.navigate_next),
+                            onTap: () {},
+                          ),
                         );
                       },
                       separatorBuilder: (BuildContext context, int index) {
-                        return Divider();
+                        return Divider(height: 2.0,);
                       },
                       itemCount: snapshot.data.length);
               }
@@ -107,16 +115,22 @@ _evaluateOrder(String state) {
   if (state == 'P')
     return Icon(
       Icons.receipt,
-      color: Colors.grey,
+      color: Colors.black,
     );
   if (state == 'A')
     return Icon(
       Icons.receipt,
-      color: Colors.greenAccent,
+      color: Colors.white,
     );
   if (state == 'X')
     return Icon(
       Icons.cancel,
-      color: Colors.redAccent,
+      color: Colors.white,
     );
+}
+
+_evaluateOrderColor(String state) {
+  if (state == 'P') return Colors.transparent;
+  if (state == 'A') return Colors.blueAccent;
+  if (state == 'X') return Colors.redAccent;
 }

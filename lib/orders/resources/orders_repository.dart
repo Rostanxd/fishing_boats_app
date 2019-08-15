@@ -23,7 +23,15 @@ class OrdersRepository {
   Future<List<Branch>> fetchBranchesByUser(User user, String name) =>
       _branchApi.fetchBranchesByUser(user, name);
 
-  Future<List<Order>> fetchOrders(Warehouse warehouse, Branch branch,
-          DateTime dateFrom, DateTime dateTo, String state, String obs) =>
-      _orderApi.fetchOrders(warehouse, branch, dateFrom, dateTo, state, obs);
+  Future<List<Order>> fetchOrders(
+          Warehouse warehouse,
+          Branch branch,
+          Warehouse travel,
+          DateTime dateFrom,
+          DateTime dateTo,
+          String state,
+          String obs,
+          String providerName) =>
+      _orderApi.fetchOrders(
+          warehouse, branch, travel, dateFrom, dateTo, state, obs, providerName);
 }
