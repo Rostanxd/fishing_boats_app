@@ -14,6 +14,9 @@ class OrdersRepository {
   Future<List<Warehouse>> fetchWarehouses(String name) =>
       _warehouseApi.fetchWarehouses(name);
 
+  Future<List<Warehouse>> fetchTravels(String name) =>
+      _warehouseApi.fetchTravels(name);
+
   Future<List<Branch>> fetchBranches(String name) =>
       _branchApi.fetchBranches(name);
 

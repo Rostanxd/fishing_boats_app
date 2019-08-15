@@ -12,9 +12,12 @@ class OrderPageBloc extends Object implements BlocBase {
   final _warehouseSelected = BehaviorSubject<Warehouse>();
   final _branchSearch = BehaviorSubject<String>();
   final _branchSelected = BehaviorSubject<Branch>();
+  final _travelSearch = BehaviorSubject<String>();
+  final _travelSelected = BehaviorSubject<Warehouse>();
   final _stateSelected = BehaviorSubject<String>();
   final _warehousesAvailable = BehaviorSubject<List<Warehouse>>();
   final _branchesAvailable = BehaviorSubject<List<Branch>>();
+  final _travelAvailable = BehaviorSubject<List<Warehouse>>();
   final _dateFrom = BehaviorSubject<DateTime>();
   final _dateTo = BehaviorSubject<DateTime>();
   final _state = BehaviorSubject<String>();
@@ -29,6 +32,8 @@ class OrderPageBloc extends Object implements BlocBase {
   Observable<Warehouse> get warehouseSelected => _warehouseSelected.stream;
 
   Observable<Branch> get branchSelected => _branchSelected.stream;
+
+  Observable<Warehouse> get travelSelected => _travelSelected.stream;
 
   Observable<String> get stateSelected => _stateSelected.stream;
 
@@ -66,6 +71,12 @@ class OrderPageBloc extends Object implements BlocBase {
         yield await _ordersRepository.fetchBranchesByUser(_user.value, terms);
       });
 
+  Stream<List<Warehouse>> get travels => _travelSearch
+      .debounce(const Duration(milliseconds: 500))
+      .switchMap((terms) async* {
+    yield await _ordersRepository.fetchTravels(terms);
+  });
+
   Future<void> fetchOrders() async {
     await _ordersRepository
         .fetchOrders(_warehouseSelected.value, _branchSelected.value,
@@ -84,6 +95,8 @@ class OrderPageBloc extends Object implements BlocBase {
 
   Function(String) get changeBranchSearch => _branchSearch.add;
 
+  Function(String) get changeTravelSearch => _travelSearch.add;
+
   Function(DateTime) get changeDateFrom => _dateFrom.add;
 
   Function(DateTime) get changeDateTo => _dateTo.add;
@@ -91,6 +104,8 @@ class OrderPageBloc extends Object implements BlocBase {
   Function(Warehouse) get changeWarehouseSelected => _warehouseSelected.add;
 
   Function(Branch) get changeBranchSelected => _branchSelected.add;
+
+  Function(Warehouse) get changeTravelSelected => _travelSelected.add;
 
   Function(String) get changeState => _state.add;
 
@@ -112,9 +127,12 @@ class OrderPageBloc extends Object implements BlocBase {
     _warehouseSelected.close();
     _branchSearch.close();
     _branchSelected.close();
+    _travelSearch.close();
+    _travelSelected.close();
     _stateSelected.close();
     _warehousesAvailable.close();
     _branchesAvailable.close();
+    _travelAvailable.close();
     _dateFrom.close();
     _dateTo.close();
     _state.close();

@@ -127,6 +127,24 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
             ),
             Divider(),
             StreamBuilder(
+              stream: _orderPageBloc.travelSelected,
+              builder:
+                  (BuildContext context, AsyncSnapshot<Warehouse> snapshot) {
+                return ListTile(
+                  title: Text(
+                      snapshot.hasData ? snapshot.data.name : '-- Todas --'),
+                  subtitle: Text('Viaje'),
+                  trailing: Icon(Icons.navigate_next),
+                  onTap: () {
+                    showSearch(
+                        context: context,
+                        delegate: TravelSearch(_orderPageBloc));
+                  },
+                );
+              },
+            ),
+            Divider(),
+            StreamBuilder(
               stream: _orderPageBloc.dateFrom,
               builder:
                   (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
@@ -525,6 +543,148 @@ class BranchSearch extends SearchDelegate<String> {
                     trailing: Icon(Icons.check),
                     onTap: () {
                       _orderPageBloc.changeBranchSelected(snapshot.data[index]);
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+                separatorBuilder: (BuildContext context, int index) {
+                  return Divider();
+                },
+              );
+          }
+        },
+      );
+    }
+  }
+}
+
+class TravelSearch extends SearchDelegate<String> {
+  final OrderPageBloc _orderPageBloc;
+
+  TravelSearch(this._orderPageBloc);
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+          close(context, null);
+        },
+      )
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: AnimatedIcon(
+          icon: AnimatedIcons.menu_arrow, progress: transitionAnimation),
+      onPressed: () {
+        close(context, null);
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return StreamBuilder(
+      stream: _orderPageBloc.travels,
+      builder: (BuildContext context, AsyncSnapshot<List<Warehouse>> snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return centerCircularProgress();
+          default:
+            if (snapshot.hasError)
+              return Container(
+                child: Text(snapshot.error),
+              );
+
+            if (!snapshot.hasData ||
+                snapshot.data == null ||
+                snapshot.data.length == 0)
+              return Container(
+                child: Text('Lo sentimos no existen coincidencias'),
+              );
+
+            return ListView.separated(
+              itemCount: snapshot.data.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Text(snapshot.data[index].name),
+                  trailing: Icon(Icons.check),
+                  onTap: () {
+                    _orderPageBloc
+                        .changeTravelSelected(snapshot.data[index]);
+                    Navigator.pop(context);
+                  },
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) {
+                return Divider();
+              },
+            );
+        }
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    if (query.isEmpty) {
+      return ListView(
+        children: <Widget>[
+          ListTile(
+            title: Text('-- Todas --'),
+            trailing: Icon(Icons.check),
+            onTap: () {
+              _orderPageBloc.changeTravelSelected(null);
+              Navigator.pop(context);
+            },
+          ),
+          Divider(),
+          Container(
+              margin: EdgeInsets.all(20.0),
+              child: Text(
+                'Ingrese el nombre del barco a buscar.',
+                style: TextStyle(fontSize: 16.0),
+              ))
+        ],
+      );
+    } else {
+      _orderPageBloc.changeTravelSearch(query);
+
+      return StreamBuilder(
+        stream: _orderPageBloc.travels,
+        builder:
+            (BuildContext context, AsyncSnapshot<List<Warehouse>> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return centerCircularProgress();
+            default:
+              if (snapshot.hasError)
+                return Container(
+                  child: Text(snapshot.error.toString()),
+                );
+
+              if (!snapshot.hasData ||
+                  snapshot.data == null ||
+                  snapshot.data.length == 0)
+                return Container(
+                  margin: EdgeInsets.only(left: 10.0, top: 10.0),
+                  child: Text('Lo sentimos no existen coincidencias'),
+                );
+
+              return ListView.separated(
+                itemCount: snapshot.data.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return ListTile(
+                    title: Text(snapshot.data[index].name),
+                    trailing: Icon(Icons.check),
+                    onTap: () {
+                      _orderPageBloc
+                          .changeTravelSelected(snapshot.data[index]);
                       Navigator.pop(context);
                     },
                   );
