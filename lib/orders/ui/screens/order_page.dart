@@ -64,7 +64,10 @@ class _OrderPageState extends State<OrderPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          OrderDetailPage();
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) => OrderDetailPage()));
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.blueAccent,
@@ -100,7 +103,15 @@ class _OrderPageState extends State<OrderPage> {
                               '${snapshot.data[index].observation.substring(0, 30)}...')
                           : Text('${snapshot.data[index].observation}'),
                       trailing: Icon(Icons.navigate_next),
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                            (context),
+                            MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    OrderDetailPage(
+                                      order: snapshot.data[index],
+                                    )));
+                      },
                     ),
                   );
                 },

@@ -11,10 +11,25 @@ class Order extends Object {
   Warehouse warehouse;
   Branch branch;
   Employed applicant;
+  Warehouse travel;
+  String providerName;
+  String userCreated;
+  DateTime dateCreated;
   List<OrderDetail> detail;
 
-  Order(this.id, this.date, this.state, this.observation, this.warehouse,
-      this.branch, this.applicant, this.detail);
+  Order(
+      this.id,
+      this.date,
+      this.state,
+      this.observation,
+      this.warehouse,
+      this.branch,
+      this.applicant,
+      this.travel,
+      this.providerName,
+      this.userCreated,
+      this.dateCreated,
+      this.detail);
 
   Order.fromFishBackEndApiRest(Map<String, dynamic> jsonData) {
     Iterable detailIterable = Iterable.empty();
@@ -31,6 +46,12 @@ class Order extends Object {
       'id': jsonData['applicant_id'],
       'firstName': jsonData['applicant_name']
     });
+    this.travel = Warehouse.fromSimpleMap(
+        {'code': jsonData['travel_id'], 'name': jsonData['travel_name']});
+    this.providerName =
+        jsonData['provider_name'] != null ? jsonData['provider_name'] : '';
+    this.userCreated = jsonData['user_created'];
+    this.dateCreated = DateTime.parse(jsonData['date_created']);
 
     detailIterable = jsonData['detail'];
     if (detailIterable.length > 0) {
@@ -44,7 +65,9 @@ class Order extends Object {
   @override
   String toString() {
     return 'Order{id: $id, date: $date, state: $state, '
-        'observation: $observation, warehouse: $warehouse, applicant: $applicant}';
+        'observation: $observation, warehouse: $warehouse, '
+        'branch: $branch, applicant: $applicant, travel: $travel, '
+        'providerName: $providerName, detail: $detail}';
   }
 }
 
