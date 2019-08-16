@@ -2,7 +2,6 @@ import 'package:fishing_boats_app/authentication/blocs/authentication_bloc.dart'
 import 'package:fishing_boats_app/orders/blocs/order_page_bloc.dart';
 import 'package:fishing_boats_app/orders/models/order.dart';
 import 'package:fishing_boats_app/orders/ui/screens/order_detail_page.dart';
-import 'package:fishing_boats_app/widgets/custom_circular_progress.dart';
 import 'package:flutter/material.dart';
 
 import 'order_filters_page.dart';
@@ -36,78 +35,85 @@ class _OrderPageState extends State<OrderPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Pedidos'),
-          backgroundColor: Colors.blueAccent,
-          actions: <Widget>[
-            IconButton(
-                icon: Icon(Icons.search),
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              OrderFilterPage(_orderPageBloc)));
-                })
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            OrderDetailPage();
-          },
-          child: Icon(Icons.add),
-          backgroundColor: Colors.blueAccent,
-        ),
-        body: Container(
+      appBar: AppBar(
+        title: Text('Pedidos'),
+        backgroundColor: Colors.blueAccent,
+        actions: <Widget>[
+          IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => OrderFilterPage(_orderPageBloc)));
+              })
+        ],
+        elevation: 5.0,
+        bottom: PreferredSize(
+          preferredSize: Size(double.infinity, 1.0),
           child: StreamBuilder(
-            stream: _orderPageBloc.orders,
-            builder:
-                (BuildContext context, AsyncSnapshot<List<Order>> snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.waiting:
-                  return centerCircularProgress();
-                default:
-                  if (snapshot.hasError)
-                    return Container(
-                      child: Text('Error: ${snapshot.error.toString()}'),
-                    );
+              stream: _orderPageBloc.loading,
+              builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                return snapshot.data != null && snapshot.data
+                    ? LinearProgressIndicator()
+                    : Container(
+                        child: null,
+                      );
+              }),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          OrderDetailPage();
+        },
+        child: Icon(Icons.add),
+        backgroundColor: Colors.blueAccent,
+      ),
+      body: Container(
+        child: StreamBuilder(
+          stream: _orderPageBloc.orders,
+          builder: (BuildContext context, AsyncSnapshot<List<Order>> snapshot) {
+            if (snapshot.hasError)
+              return Container(
+                child: Text('Error: ${snapshot.error.toString()}'),
+              );
 
-                  if (!snapshot.hasData ||
-                      snapshot.data == null ||
-                      snapshot.data.length == 0)
-                    return Center(
-                      child: Container(
-                        child: Text('No hay resultados de la búsqueda.'),
-                      ),
-                    );
+            if (!snapshot.hasData ||
+                snapshot.data == null ||
+                snapshot.data.length == 0)
+              return Center(
+                child: Container(
+                  child: Text('No hay resultados de la búsqueda.'),
+                ),
+              );
 
-                  return ListView.separated(
-                      itemBuilder: (BuildContext context, int index) {
-                        return Container(
-                          color:
-                              _evaluateOrderColor(snapshot.data[index].state),
-                          child: ListTile(
-                            leading: _evaluateOrder(snapshot.data[index].state),
-                            title: Text(
-                                'No. ${snapshot.data[index].id.toString()} - ${snapshot.data[index].branch.name}'),
-                            subtitle: snapshot.data[index].observation.length >
-                                    35
-                                ? Text(
-                                    '${snapshot.data[index].observation.substring(0, 30)}...')
-                                : Text('${snapshot.data[index].observation}'),
-                            trailing: Icon(Icons.navigate_next),
-                            onTap: () {},
-                          ),
-                        );
-                      },
-                      separatorBuilder: (BuildContext context, int index) {
-                        return Divider(height: 2.0,);
-                      },
-                      itemCount: snapshot.data.length);
-              }
-            },
-          ),
-        ));
+            return ListView.separated(
+                itemBuilder: (BuildContext context, int index) {
+                  return Container(
+                    color: _evaluateOrderColor(snapshot.data[index].state),
+                    child: ListTile(
+                      leading: _evaluateOrder(snapshot.data[index].state),
+                      title: Text('No. ${snapshot.data[index].id.toString()} - '
+                          '${snapshot.data[index].branch.name}'),
+                      subtitle: snapshot.data[index].observation.length > 35
+                          ? Text(
+                              '${snapshot.data[index].observation.substring(0, 30)}...')
+                          : Text('${snapshot.data[index].observation}'),
+                      trailing: Icon(Icons.navigate_next),
+                      onTap: () {},
+                    ),
+                  );
+                },
+                separatorBuilder: (BuildContext context, int index) {
+                  return Divider(
+                    height: 2.0,
+                  );
+                },
+                itemCount: snapshot.data.length);
+          },
+        ),
+      ),
+    );
   }
 }
 

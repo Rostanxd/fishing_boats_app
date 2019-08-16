@@ -25,6 +25,7 @@ class OrderPageBloc extends Object implements BlocBase {
   final _providerName = BehaviorSubject<String>();
   final _orders = BehaviorSubject<List<Order>>();
   final _message = BehaviorSubject<String>();
+  final _loading = BehaviorSubject<bool>();
   final OrdersRepository _ordersRepository = OrdersRepository();
 
   /// Observables
@@ -55,6 +56,8 @@ class OrderPageBloc extends Object implements BlocBase {
 
   ValueObservable<String> get provider => _providerName.stream;
 
+  Observable<bool> get loading => _loading.stream;
+
   /// Functions
   Stream<List<Warehouse>> get warehouses => _warehouseSearch
           .debounce(const Duration(milliseconds: 500))
@@ -81,6 +84,8 @@ class OrderPageBloc extends Object implements BlocBase {
       });
 
   Future<void> fetchOrders() async {
+    _orders.sink.add(null);
+    _loading.sink.add(true);
     await _ordersRepository
         .fetchOrders(
             _warehouseSelected.value,
@@ -94,8 +99,10 @@ class OrderPageBloc extends Object implements BlocBase {
         .timeout(Duration(seconds: 30))
         .then((data) {
       _orders.sink.add(data);
+      _loading.sink.add(false);
     }).catchError((error) {
       _message.sink.add('Error: ${error.toString()}');
+      _loading.sink.add(false);
     });
   }
 
@@ -154,5 +161,6 @@ class OrderPageBloc extends Object implements BlocBase {
     _providerName.close();
     _orders.close();
     _message.close();
+    _loading.close();
   }
 }
