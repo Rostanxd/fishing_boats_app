@@ -67,7 +67,9 @@ class _OrderPageState extends State<OrderPage> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (BuildContext context) => OrderDetailPage()));
+                  builder: (BuildContext context) => OrderDetailPage(
+                        authenticationBloc: widget.authenticationBloc,
+                      )));
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.blueAccent,
@@ -109,6 +111,8 @@ class _OrderPageState extends State<OrderPage> {
                             MaterialPageRoute(
                                 builder: (BuildContext context) =>
                                     OrderDetailPage(
+                                      authenticationBloc:
+                                          widget.authenticationBloc,
                                       order: snapshot.data[index],
                                     )));
                       },

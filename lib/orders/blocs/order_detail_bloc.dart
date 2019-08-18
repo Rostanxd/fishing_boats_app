@@ -1,11 +1,14 @@
+import 'package:fishing_boats_app/authentication/models/user.dart';
 import 'package:fishing_boats_app/models/bloc_base.dart';
 import 'package:fishing_boats_app/orders/models/branch.dart';
 import 'package:fishing_boats_app/orders/models/employed.dart';
 import 'package:fishing_boats_app/orders/models/order.dart';
 import 'package:fishing_boats_app/orders/models/warehouse.dart';
+import 'package:fishing_boats_app/orders/resources/orders_repository.dart';
 import 'package:rxdart/rxdart.dart';
 
 class OrderDetailBloc extends BlocBase {
+  final _user = BehaviorSubject<User>();
   final _id = BehaviorSubject<int>();
   final _date = BehaviorSubject<DateTime>();
   final _warehouseSelected = BehaviorSubject<Warehouse>();
@@ -19,6 +22,18 @@ class OrderDetailBloc extends BlocBase {
   final _dateCreated = BehaviorSubject<DateTime>();
   final _orderDetail = BehaviorSubject<List<OrderDetail>>();
   final _activeForm = BehaviorSubject<bool>();
+  final _detailQuantity = BehaviorSubject<int>();
+  final _detailDescription = BehaviorSubject<String>();
+  final _warehouses = BehaviorSubject<List<Warehouse>>();
+  final _branches = BehaviorSubject<List<Branch>>();
+  final _travels = BehaviorSubject<List<Warehouse>>();
+  final _warehouseSearch = BehaviorSubject<String>();
+  final _branchSearch = BehaviorSubject<String>();
+  final _travelSearch = BehaviorSubject<String>();
+  final _message = BehaviorSubject<String>();
+  final OrdersRepository _ordersRepository = OrdersRepository();
+
+  ValueObservable<User> get userLogged => _user.stream;
 
   Observable<int> get id => _id.stream;
 
@@ -44,7 +59,45 @@ class OrderDetailBloc extends BlocBase {
 
   Observable<bool> get activeForm => _activeForm.stream;
 
+  Observable<int> get detailQuantity => _detailQuantity.stream;
+
+  Observable<String> get detailDescription => _detailDescription.stream;
+
+  Observable<String> get messenger => _message.stream;
+
+  Observable<String> get warehouseSearch => _warehouseSearch.stream;
+
+  Observable<String> get branchSearch => _branchSearch.stream;
+
+  Observable<String> get travelSearch => _travelSearch.stream;
+
   /// Functions
+  Stream<List<Warehouse>> get warehouses => _warehouseSearch
+          .debounce(const Duration(milliseconds: 500))
+          .switchMap((terms) async* {
+        yield await _ordersRepository.fetchWarehouses(terms);
+      });
+
+  Stream<List<Branch>> get branches => _branchSearch
+          .debounce(const Duration(milliseconds: 500))
+          .switchMap((terms) async* {
+        yield await _ordersRepository.fetchBranches(terms);
+      });
+
+  Stream<List<Branch>> get branchesByUser => _branchSearch
+          .debounce(const Duration(milliseconds: 500))
+          .switchMap((terms) async* {
+        yield await _ordersRepository.fetchBranchesByUser(_user.value, terms);
+      });
+
+  Stream<List<Warehouse>> get travels => _travelSearch
+          .debounce(const Duration(milliseconds: 500))
+          .switchMap((terms) async* {
+        yield await _ordersRepository.fetchTravels(terms);
+      });
+
+  Function(User) get changeUser => _user.add;
+
   Function(int) get changeId => _id.add;
 
   Function(DateTime) get changeDate => _date.add;
@@ -67,7 +120,19 @@ class OrderDetailBloc extends BlocBase {
 
   Function(bool) get changeActiveForm => _activeForm.add;
 
-  void loadStreamData (Order _order) {
+  Function(int) get changeDetailQuantity => _detailQuantity.add;
+
+  Function(String) get changeDetailDescription => _detailDescription.add;
+
+  Function(String) get changeMessenger => _message.add;
+
+  Function(String) get changeWarehouseSearch => _warehouseSearch.add;
+
+  Function(String) get changeBranchSearch => _branchSearch.add;
+
+  Function(String) get changeTravelSearch => _travelSearch.add;
+
+  void loadStreamData(Order _order) {
     if (_order != null) {
       _id.sink.add(_order.id);
       _date.sink.add(_order.date);
@@ -80,12 +145,84 @@ class OrderDetailBloc extends BlocBase {
       _orderDetail.sink.add(_order.detail);
       _activeForm.sink.add(false);
     } else {
+      _date.sink.add(DateTime.now());
       _activeForm.sink.add(true);
     }
   }
 
+  /// ORDER HEADER LOGIC
+
+  /// ORDER DETAIL LOGIC
+  void addRemoveQuantityDetail(bool adding) {
+    if (adding) {
+      _detailQuantity.sink.add(_detailQuantity.value + 1);
+    } else {
+      if (_detailQuantity.value > 0)
+        _detailQuantity.sink.add(_detailQuantity.value - 1);
+    }
+  }
+
+  Future<bool> updateDetailLine(int index) async {
+    if (_detailDescription.value == '' && _detailQuantity.value == 0) {
+      _message.sink.add(
+          'No ha especificado cantidad y el detalle. Verifique por favor.');
+      return false;
+    }
+
+    if (_detailDescription.value == '') {
+      _message.sink.add('No ha especificado el detalle. Verifique por favor.');
+      return false;
+    }
+    List<OrderDetail> _orderDetailToUpd = _orderDetail.value;
+    if (_orderDetailToUpd.length != 0) {
+      _orderDetailToUpd[index].quantity = _detailQuantity.value;
+      _orderDetailToUpd[index].detail = _detailDescription.value;
+      _orderDetail.sink.add(_orderDetailToUpd);
+    }
+    return true;
+  }
+
+  void removeDetailLine(int index) {
+    List<OrderDetail> _orderDetailToUpd = _orderDetail.value;
+    if (_orderDetailToUpd.length != 0) {
+      _orderDetailToUpd.removeAt(index);
+      _orderDetail.sink.add(_orderDetailToUpd);
+    }
+  }
+
+  Future<bool> addNewDetailLine() async {
+    if (_detailDescription.value == '' && _detailQuantity.value == 0) {
+      _message.sink.add(
+          'No ha especificado cantidad y el detalle. Verifique por favor.');
+      return false;
+    }
+
+    if (_detailDescription.value == '') {
+      _message.sink.add('No ha especificado el detalle. Verifique por favor.');
+      return false;
+    }
+
+    List<OrderDetail> _orderDetailToUpd = _orderDetail.value;
+    _orderDetailToUpd
+        .add(OrderDetail(0, _detailQuantity.value, _detailDescription.value));
+    return true;
+  }
+
+  Future<void> savingOrder() async {
+    _state.sink.add('P');
+  }
+
+  Future<void> processingOrder() async {
+    _state.sink.add('A');
+  }
+
+  Future<void> cancelingOrder() async {
+    _state.sink.add('X');
+  }
+
   @override
   void dispose() {
+    _user.close();
     _id.close();
     _date.close();
     _warehouseSelected.close();
@@ -99,6 +236,14 @@ class OrderDetailBloc extends BlocBase {
     _dateCreated.close();
     _orderDetail.close();
     _activeForm.close();
+    _detailQuantity.close();
+    _detailDescription.close();
+    _message.close();
+    _warehouses.close();
+    _branches.close();
+    _travels.close();
+    _warehouseSearch.close();
+    _branchSearch.close();
+    _travelSearch.close();
   }
-
 }
