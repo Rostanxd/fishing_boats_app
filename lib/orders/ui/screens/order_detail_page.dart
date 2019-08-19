@@ -84,9 +84,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: _order != null
-            ? Text('Pedido #${_order.id}')
-            : Text('Nuevo pedido'),
+        title: StreamBuilder(
+          stream: _orderDetailBloc.id,
+          builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+            return snapshot.hasData
+                ? Text('Pedido #${snapshot.data.toString()}')
+                : Text('Nuevo pedido');
+          },
+        ),
         backgroundColor:
             _order != null ? _evaluateOrderColor(_order.state) : Colors.grey,
         bottom: PreferredSize(
