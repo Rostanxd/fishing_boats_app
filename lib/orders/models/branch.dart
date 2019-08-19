@@ -16,6 +16,11 @@ class Branch extends Object {
     this.name = json['name'] != null ? json['name'] : '';
   }
 
+  Map<String, dynamic> toJson() => {
+    'code': this.code,
+    'name': this.name,
+  };
+
   @override
   String toString() {
     return 'Branch{code: $code, name: $name}';

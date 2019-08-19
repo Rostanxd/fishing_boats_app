@@ -62,6 +62,20 @@ class Order extends Object {
     }
   }
 
+  Map<String, dynamic> toJson() => {
+    'id': this.id,
+    'date': this.date.toString(),
+    'observation': this.observation,
+    'warehouse': this.warehouse.toJson(),
+    'branch': this.branch.toJson(),
+    'travel': this.travel.toJson(),
+    'applicant': this.applicant.toJson(),
+    'providerName': this.providerName,
+    'userCreated': this.userCreated,
+    'dateCreated': this.dateCreated.toString(),
+    'detail': this.detail.map((line) => line.toJson()).toList(),
+  };
+
   @override
   String toString() {
     return 'Order{id: $id, date: $date, state: $state, '
@@ -83,6 +97,12 @@ class OrderDetail extends Object {
     this.quantity = json['quantity'] != null ? json['quantity'] : 0;
     this.detail = json['detail'] != null ? json['detail'] : '';
   }
+
+  Map<String, dynamic> toJson() => {
+    'sequence': this.sequence.toString(),
+    'quantity': this.quantity.toString(),
+    'detail': this.detail,
+  };
 
   @override
   String toString() {

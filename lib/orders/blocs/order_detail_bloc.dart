@@ -30,7 +30,9 @@ class OrderDetailBloc extends BlocBase {
   final _warehouseSearch = BehaviorSubject<String>();
   final _branchSearch = BehaviorSubject<String>();
   final _travelSearch = BehaviorSubject<String>();
+  final _employedSearch = BehaviorSubject<String>();
   final _message = BehaviorSubject<String>();
+  final _loading = BehaviorSubject<bool>();
   final OrdersRepository _ordersRepository = OrdersRepository();
 
   ValueObservable<User> get userLogged => _user.stream;
@@ -44,6 +46,8 @@ class OrderDetailBloc extends BlocBase {
   Observable<Branch> get branch => _branchSelected.stream;
 
   Observable<Warehouse> get travel => _travelSelected.stream;
+
+  Observable<Employed> get applicant => _applicantSelected.stream;
 
   Observable<String> get state => _state.stream;
 
@@ -71,6 +75,8 @@ class OrderDetailBloc extends BlocBase {
 
   Observable<String> get travelSearch => _travelSearch.stream;
 
+  Observable<bool> get loading => _loading.stream;
+
   /// Functions
   Stream<List<Warehouse>> get warehouses => _warehouseSearch
           .debounce(const Duration(milliseconds: 500))
@@ -96,6 +102,12 @@ class OrderDetailBloc extends BlocBase {
         yield await _ordersRepository.fetchTravels(terms);
       });
 
+  Stream<List<Employed>> get employees => _employedSearch
+          .debounce(const Duration(milliseconds: 500))
+          .switchMap((terms) async* {
+        yield await _ordersRepository.fetchEmployees(terms);
+      });
+
   Function(User) get changeUser => _user.add;
 
   Function(int) get changeId => _id.add;
@@ -107,6 +119,8 @@ class OrderDetailBloc extends BlocBase {
   Function(Branch) get changeBranch => _branchSelected.add;
 
   Function(Warehouse) get changeTravel => _travelSelected.add;
+
+  Function(Employed) get changeApplicant => _applicantSelected.add;
 
   Function(String) get changeState => _state.add;
 
@@ -132,6 +146,8 @@ class OrderDetailBloc extends BlocBase {
 
   Function(String) get changeTravelSearch => _travelSearch.add;
 
+  Function(String) get changeEmployedSearch => _employedSearch.add;
+
   void loadStreamData(Order _order) {
     if (_order != null) {
       _id.sink.add(_order.id);
@@ -139,6 +155,7 @@ class OrderDetailBloc extends BlocBase {
       _warehouseSelected.sink.add(_order.warehouse);
       _branchSelected.sink.add(_order.branch);
       _travelSelected.sink.add(_order.travel);
+      _applicantSelected.sink.add(_order.applicant);
       _state.sink.add(_order.state);
       _observation.sink.add(_order.observation);
       _providerName.sink.add(_order.providerName);
@@ -202,10 +219,39 @@ class OrderDetailBloc extends BlocBase {
       return false;
     }
 
-    List<OrderDetail> _orderDetailToUpd = _orderDetail.value;
+    List<OrderDetail> _orderDetailToUpd = List<OrderDetail>();
+    if (_orderDetail.value != null)
+      _orderDetailToUpd = _orderDetail.value;
+
     _orderDetailToUpd
         .add(OrderDetail(0, _detailQuantity.value, _detailDescription.value));
+    _orderDetail.sink.add(_orderDetailToUpd);
     return true;
+  }
+
+  Future<void> createOrder() async {
+    _loading.sink.add(true);
+    Order _order = Order(
+        0,
+        _date.value,
+        'P',
+        _observation.value,
+        _warehouseSelected.value,
+        _branchSelected.value,
+        _applicantSelected.value,
+        _travelSelected.value,
+        '',
+        _user.value.user,
+        DateTime.now(),
+        _orderDetail.value);
+    _ordersRepository.createOrder(_order).then((value) {
+      _id.sink.add(value);
+      _state.sink.add('P');
+      _loading.sink.add(false);
+    }, onError: (error) {
+      _message.sink.add('Error: ${error.toString()}');
+      _loading.sink.add(false);
+    });
   }
 
   Future<void> savingOrder() async {
@@ -245,5 +291,6 @@ class OrderDetailBloc extends BlocBase {
     _warehouseSearch.close();
     _branchSearch.close();
     _travelSearch.close();
+    _loading.close();
   }
 }

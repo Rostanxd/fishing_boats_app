@@ -1,6 +1,7 @@
 import 'package:fishing_boats_app/authentication/models/user.dart';
 import 'package:fishing_boats_app/models/bloc_base.dart';
 import 'package:fishing_boats_app/orders/models/branch.dart';
+import 'package:fishing_boats_app/orders/models/employed.dart';
 import 'package:fishing_boats_app/orders/models/order.dart';
 import 'package:fishing_boats_app/orders/models/warehouse.dart';
 import 'package:fishing_boats_app/orders/resources/orders_repository.dart';
@@ -14,6 +15,8 @@ class OrderPageBloc extends Object implements BlocBase {
   final _branchSelected = BehaviorSubject<Branch>();
   final _travelSearch = BehaviorSubject<String>();
   final _travelSelected = BehaviorSubject<Warehouse>();
+  final _applicantSearch = BehaviorSubject<String>();
+  final _applicantSelected = BehaviorSubject<Employed>();
   final _stateSelected = BehaviorSubject<String>();
   final _warehousesAvailable = BehaviorSubject<List<Warehouse>>();
   final _branchesAvailable = BehaviorSubject<List<Branch>>();
@@ -36,6 +39,8 @@ class OrderPageBloc extends Object implements BlocBase {
   Observable<Branch> get branchSelected => _branchSelected.stream;
 
   Observable<Warehouse> get travelSelected => _travelSelected.stream;
+
+  Observable<Employed> get applicantSelected => _applicantSelected.stream;
 
   Observable<String> get stateSelected => _stateSelected.stream;
 
@@ -83,6 +88,12 @@ class OrderPageBloc extends Object implements BlocBase {
         yield await _ordersRepository.fetchTravels(terms);
       });
 
+  Stream<List<Employed>> get employees => _applicantSearch
+          .debounce(const Duration(milliseconds: 500))
+          .switchMap((terms) async* {
+        yield await _ordersRepository.fetchEmployees(terms);
+      });
+
   Future<void> fetchOrders() async {
     _orders.sink.add(null);
     _loading.sink.add(true);
@@ -91,6 +102,7 @@ class OrderPageBloc extends Object implements BlocBase {
             _warehouseSelected.value,
             _branchSelected.value,
             _travelSelected.value,
+            _applicantSelected.value,
             _dateFrom.value,
             _dateTo.value,
             _state.value,
@@ -124,6 +136,10 @@ class OrderPageBloc extends Object implements BlocBase {
 
   Function(Warehouse) get changeTravelSelected => _travelSelected.add;
 
+  Function(String) get changeApplicantSearch => _applicantSearch.add;
+
+  Function(Employed) get changeApplicantSelected => _applicantSelected.add;
+
   Function(String) get changeState => _state.add;
 
   Function(String) get changeObservation => _observation.add;
@@ -134,6 +150,7 @@ class OrderPageBloc extends Object implements BlocBase {
     _warehouseSelected.sink.add(null);
     _branchSelected.sink.add(null);
     _travelSelected.sink.add(null);
+    _applicantSelected.sink.add(null);
     _dateFrom.sink.add(DateTime.now());
     _dateTo.sink.add(DateTime.now());
     _state.sink.add('');
@@ -150,6 +167,8 @@ class OrderPageBloc extends Object implements BlocBase {
     _branchSelected.close();
     _travelSearch.close();
     _travelSelected.close();
+    _applicantSearch.close();
+    _applicantSelected.close();
     _stateSelected.close();
     _warehousesAvailable.close();
     _branchesAvailable.close();

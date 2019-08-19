@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:fishing_boats_app/models/connection.dart';
 import 'package:fishing_boats_app/orders/models/branch.dart';
+import 'package:fishing_boats_app/orders/models/employed.dart';
 import 'package:fishing_boats_app/orders/models/order.dart';
 import 'package:fishing_boats_app/orders/models/warehouse.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +14,7 @@ class OrderApi {
       Warehouse warehouse,
       Branch branch,
       Warehouse travel,
+      Employed employed,
       DateTime dateFrom,
       DateTime dateTo,
       String state,
@@ -21,8 +23,9 @@ class OrderApi {
     String warehouseId = warehouse != null ? warehouse.code : '';
     String branchId = branch != null ? branch.code : '';
     String travelId = travel != null ? travel.code : '';
+    String employedId = employed != null ? employed.id : '';
     String dateFromSt = formatter.format(dateFrom);
-    String dateToSt = formatter.format(dateTo);
+    String dateToSt = formatter.format(dateTo.add(Duration(days: 1)));
     List<Order> orderList = List<Order>();
     List data;
 
@@ -31,7 +34,7 @@ class OrderApi {
 
     final response = await http.get(
         '${Connection.host}:${Connection.port}/orders/list/'
-        '$dateFromSt/$dateToSt/$warehouseId/$branchId/$travelId/$state/$obs/$providerName/');
+        '$dateFromSt/$dateToSt/$warehouseId/$branchId/$travelId/$employedId/$state/$obs/$providerName/');
 
     if (response.statusCode == 200) {
       data = json.decode(utf8.decode(response.bodyBytes));
@@ -43,5 +46,20 @@ class OrderApi {
       throw Exception('Error obteniendo las ordenes');
     }
     return orderList;
+  }
+
+  Future<int> createOrder(Order order) async {
+    int id;
+    final response = await http.post(
+      '${Connection.host}:${Connection.port}/orders/create/',
+      headers: {"Content-Type": "application/json"},
+      body: json.encode({"order_data": "${json.encode(order.toJson())}"}),
+    );
+    if (response.statusCode == 200) {
+      id = json.decode(utf8.decode(response.bodyBytes))['id'];
+    } else {
+      throw Exception('Error generando la orden');
+    }
+    return id;
   }
 }

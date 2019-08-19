@@ -1,6 +1,7 @@
 import 'package:fishing_boats_app/authentication/blocs/authentication_bloc.dart';
 import 'package:fishing_boats_app/orders/blocs/order_detail_bloc.dart';
 import 'package:fishing_boats_app/orders/models/branch.dart';
+import 'package:fishing_boats_app/orders/models/employed.dart';
 import 'package:fishing_boats_app/orders/models/order.dart';
 import 'package:fishing_boats_app/orders/models/warehouse.dart';
 import 'package:fishing_boats_app/orders/ui/screens/order_detail_line_page.dart';
@@ -88,6 +89,18 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             : Text('Nuevo pedido'),
         backgroundColor:
             _order != null ? _evaluateOrderColor(_order.state) : Colors.grey,
+        bottom: PreferredSize(
+          preferredSize: Size(double.infinity, 1.0),
+          child: StreamBuilder(
+              stream: _orderDetailBloc.loading,
+              builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                return snapshot.data != null && snapshot.data
+                    ? LinearProgressIndicator()
+                    : Container(
+                        child: null,
+                      );
+              }),
+        ),
       ),
       body: StreamBuilder(
           stream: _orderDetailBloc.activeForm,
@@ -140,6 +153,21 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             return ListTile(
               title: Text(snapshot.hasData ? snapshot.data.name : '-- N/A --'),
               subtitle: Text('Viaje'),
+              onTap: () {},
+            );
+          },
+        ),
+        Divider(),
+
+        /// Applicant
+        StreamBuilder(
+          stream: _orderDetailBloc.applicant,
+          builder: (BuildContext context, AsyncSnapshot<Employed> snapshot) {
+            return ListTile(
+              title: Text(snapshot.hasData && snapshot.data != null
+                  ? '${snapshot.data.lastName.trim()} ${snapshot.data.firstName.trim()}'
+                  : '-- Todas --'),
+              subtitle: Text('Aplicante'),
               onTap: () {},
             );
           },
@@ -271,6 +299,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   _editableForm() {
     return ListView(
       children: <Widget>[
+        /// Warehouse
         StreamBuilder(
           stream: _orderDetailBloc.warehouse,
           builder: (BuildContext context, AsyncSnapshot<Warehouse> snapshot) {
@@ -288,6 +317,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           },
         ),
         Divider(),
+
+        /// Branch
         StreamBuilder(
           stream: _orderDetailBloc.branch,
           builder: (BuildContext context, AsyncSnapshot<Branch> snapshot) {
@@ -304,6 +335,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           },
         ),
         Divider(),
+
+        /// Travel
         StreamBuilder(
           stream: _orderDetailBloc.travel,
           builder: (BuildContext context, AsyncSnapshot<Warehouse> snapshot) {
@@ -320,6 +353,28 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           },
         ),
         Divider(),
+
+        /// Applicant
+        StreamBuilder(
+          stream: _orderDetailBloc.applicant,
+          builder: (BuildContext context, AsyncSnapshot<Employed> snapshot) {
+            return ListTile(
+              title: Text(snapshot.hasData && snapshot.data != null
+                  ? '${snapshot.data.lastName.trim()} ${snapshot.data.firstName.trim()}'
+                  : '-- Todas --'),
+              subtitle: Text('Aplicante'),
+              trailing: Icon(Icons.navigate_next),
+              onTap: () {
+                showSearch(
+                    context: context,
+                    delegate: EmployedSearch(_orderDetailBloc));
+              },
+            );
+          },
+        ),
+        Divider(),
+
+        /// Date
         StreamBuilder(
           stream: _orderDetailBloc.date,
           builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
@@ -336,6 +391,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           },
         ),
         Divider(),
+
+        /// Observation
         Container(
           margin: EdgeInsets.only(left: 15.0, top: 10.0),
           child: Text('Observación'),
@@ -349,6 +406,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           ),
         ),
         Divider(),
+
+        /// Detail
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
@@ -381,6 +440,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           ],
         ),
         Divider(),
+
+        /// Detail list
         Container(
           height: 400,
           color: Colors.white,
@@ -488,7 +549,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               style: TextStyle(color: Colors.white),
             ),
             onPressed: () {
-              _orderDetailBloc.changeActiveForm(false);
+              _orderDetailBloc.createOrder().then((v) {
+                _orderDetailBloc.changeActiveForm(false);
+              });
             },
           ),
         ];
@@ -1000,6 +1063,148 @@ class TravelSearch extends SearchDelegate<String> {
                     trailing: Icon(Icons.check),
                     onTap: () {
                       _orderDetailBloc.changeTravel(snapshot.data[index]);
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+                separatorBuilder: (BuildContext context, int index) {
+                  return Divider();
+                },
+              );
+          }
+        },
+      );
+    }
+  }
+}
+
+class EmployedSearch extends SearchDelegate<String> {
+  final OrderDetailBloc _orderDetailBloc;
+
+  EmployedSearch(this._orderDetailBloc);
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+          close(context, null);
+        },
+      )
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: AnimatedIcon(
+          icon: AnimatedIcons.menu_arrow, progress: transitionAnimation),
+      onPressed: () {
+        close(context, null);
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return StreamBuilder(
+      stream: _orderDetailBloc.employees,
+      builder: (BuildContext context, AsyncSnapshot<List<Employed>> snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return centerCircularProgress();
+          default:
+            if (snapshot.hasError)
+              return Container(
+                child: Text(snapshot.error),
+              );
+
+            if (!snapshot.hasData ||
+                snapshot.data == null ||
+                snapshot.data.length == 0)
+              return Container(
+                child: Text('Lo sentimos no existen coincidencias'),
+              );
+
+            return ListView.separated(
+              itemCount: snapshot.data.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Text(
+                      '${snapshot.data[index].lastName} ${snapshot.data[index].firstName}'),
+                  trailing: Icon(Icons.check),
+                  onTap: () {
+                    _orderDetailBloc.changeApplicant(snapshot.data[index]);
+                    Navigator.pop(context);
+                  },
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) {
+                return Divider();
+              },
+            );
+        }
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    if (query.isEmpty) {
+      return ListView(
+        children: <Widget>[
+          ListTile(
+            title: Text('-- Todos --'),
+            trailing: Icon(Icons.check),
+            onTap: () {
+              _orderDetailBloc.changeApplicant(null);
+              Navigator.pop(context);
+            },
+          ),
+          Divider(),
+          Container(
+              margin: EdgeInsets.all(20.0),
+              child: Text(
+                'Ingrese el nombre del aplicante a buscar.',
+                style: TextStyle(fontSize: 16.0),
+              ))
+        ],
+      );
+    } else {
+      _orderDetailBloc.changeEmployedSearch(query);
+
+      return StreamBuilder(
+        stream: _orderDetailBloc.employees,
+        builder:
+            (BuildContext context, AsyncSnapshot<List<Employed>> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return centerCircularProgress();
+            default:
+              if (snapshot.hasError)
+                return Container(
+                  child: Text(snapshot.error.toString()),
+                );
+
+              if (!snapshot.hasData ||
+                  snapshot.data == null ||
+                  snapshot.data.length == 0)
+                return Container(
+                  margin: EdgeInsets.only(left: 10.0, top: 10.0),
+                  child: Text('Lo sentimos no existen coincidencias'),
+                );
+
+              return ListView.separated(
+                itemCount: snapshot.data.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return ListTile(
+                    title: Text(
+                        '${snapshot.data[index].lastName} ${snapshot.data[index].firstName}'),
+                    trailing: Icon(Icons.check),
+                    onTap: () {
+                      _orderDetailBloc.changeApplicant(snapshot.data[index]);
                       Navigator.pop(context);
                     },
                   );

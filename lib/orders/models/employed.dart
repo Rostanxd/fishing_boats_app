@@ -7,14 +7,21 @@ class Employed extends Object {
 
   Employed.fromFishBackEndApiRest(Map<String, dynamic> json) {
     this.id = json['id'].toString();
-    this.firstName = json['firstName'];
-    this.lastName = json['lastName'];
+    this.firstName = json['first_name'];
+    this.lastName = json['last_name'];
   }
 
   Employed.fromSimpleMap(Map<String, dynamic> json) {
     this.id = json['id'] != null ? json['id'] : '';
     this.firstName = json['firstName'] != null ? json['firstName'] : '';
+    this.lastName = '';
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': this.id,
+    'firstName': this.firstName,
+    'lastName': this.lastName,
+  };
 
   @override
   String toString() {

@@ -22,7 +22,6 @@ class BranchApi {
 
     if (response.statusCode == 200) {
       data = json.decode(utf8.decode(response.bodyBytes));
-      print(data.toString());
       data.forEach((d) {
         branchList.add(Branch.fromFishBackEndApiRest(d));
       });

@@ -1,4 +1,5 @@
 import 'package:fishing_boats_app/orders/models/branch.dart';
+import 'package:fishing_boats_app/orders/models/employed.dart';
 import 'package:fishing_boats_app/orders/models/warehouse.dart';
 import 'package:fishing_boats_app/widgets/custom_circular_progress.dart';
 import 'package:flutter/material.dart';
@@ -92,6 +93,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
       body: Container(
         child: ListView(
           children: <Widget>[
+            /// Warehouse
             StreamBuilder(
               stream: _orderPageBloc.warehouseSelected,
               builder:
@@ -110,6 +112,8 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
               },
             ),
             Divider(),
+
+            /// Branch
             StreamBuilder(
               stream: _orderPageBloc.branchSelected,
               builder: (BuildContext context, AsyncSnapshot<Branch> snapshot) {
@@ -127,6 +131,8 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
               },
             ),
             Divider(),
+
+            /// Travel
             StreamBuilder(
               stream: _orderPageBloc.travelSelected,
               builder:
@@ -145,6 +151,29 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
               },
             ),
             Divider(),
+
+            /// Applicant
+            StreamBuilder(
+              stream: _orderPageBloc.applicantSelected,
+              builder:
+                  (BuildContext context, AsyncSnapshot<Employed> snapshot) {
+                return ListTile(
+                  title: Text(snapshot.hasData
+                      ? '${snapshot.data.lastName.trim()} ${snapshot.data.lastName.trim()}'
+                      : '-- Todos --'),
+                  subtitle: Text('Aplicante'),
+                  trailing: Icon(Icons.navigate_next),
+                  onTap: () {
+                    showSearch(
+                        context: context,
+                        delegate: EmployedSearch(_orderPageBloc));
+                  },
+                );
+              },
+            ),
+            Divider(),
+
+            /// Date From
             StreamBuilder(
               stream: _orderPageBloc.dateFrom,
               builder:
@@ -162,6 +191,8 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
               },
             ),
             Divider(),
+
+            /// Date To
             StreamBuilder(
               stream: _orderPageBloc.dateTo,
               builder:
@@ -179,6 +210,8 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
               },
             ),
             Divider(),
+
+            /// State
             Container(
               margin: EdgeInsets.only(left: 15.0, top: 10.0),
               child: Text('Estado'),
@@ -255,6 +288,8 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
               ],
             ),
             Divider(),
+
+            /// Observation
             Container(
               margin: EdgeInsets.only(left: 15.0, top: 10.0),
               child: Text('Observación'),
@@ -267,6 +302,8 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
               ),
             ),
             Divider(),
+
+            /// Provider
             Container(
               margin: EdgeInsets.only(left: 15.0, top: 10.0),
               child: Text('Proveedor'),
@@ -278,7 +315,9 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                 onChanged: _orderPageBloc.changeProvider,
               ),
             ),
-            SizedBox(height: 20.0,)
+            SizedBox(
+              height: 20.0,
+            )
           ],
         ),
       ),
@@ -629,8 +668,7 @@ class TravelSearch extends SearchDelegate<String> {
                   title: Text(snapshot.data[index].name),
                   trailing: Icon(Icons.check),
                   onTap: () {
-                    _orderPageBloc
-                        .changeTravelSelected(snapshot.data[index]);
+                    _orderPageBloc.changeTravelSelected(snapshot.data[index]);
                     Navigator.pop(context);
                   },
                 );
@@ -697,8 +735,151 @@ class TravelSearch extends SearchDelegate<String> {
                     title: Text(snapshot.data[index].name),
                     trailing: Icon(Icons.check),
                     onTap: () {
+                      _orderPageBloc.changeTravelSelected(snapshot.data[index]);
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+                separatorBuilder: (BuildContext context, int index) {
+                  return Divider();
+                },
+              );
+          }
+        },
+      );
+    }
+  }
+}
+
+class EmployedSearch extends SearchDelegate<String> {
+  final OrderPageBloc _orderPageBloc;
+
+  EmployedSearch(this._orderPageBloc);
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+          close(context, null);
+        },
+      )
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: AnimatedIcon(
+          icon: AnimatedIcons.menu_arrow, progress: transitionAnimation),
+      onPressed: () {
+        close(context, null);
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return StreamBuilder(
+      stream: _orderPageBloc.employees,
+      builder: (BuildContext context, AsyncSnapshot<List<Employed>> snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return centerCircularProgress();
+          default:
+            if (snapshot.hasError)
+              return Container(
+                child: Text(snapshot.error),
+              );
+
+            if (!snapshot.hasData ||
+                snapshot.data == null ||
+                snapshot.data.length == 0)
+              return Container(
+                child: Text('Lo sentimos no existen coincidencias'),
+              );
+
+            return ListView.separated(
+              itemCount: snapshot.data.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Text(
+                      '${snapshot.data[index].lastName} ${snapshot.data[index].firstName}'),
+                  trailing: Icon(Icons.check),
+                  onTap: () {
+                    _orderPageBloc
+                        .changeApplicantSelected(snapshot.data[index]);
+                    Navigator.pop(context);
+                  },
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) {
+                return Divider();
+              },
+            );
+        }
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    if (query.isEmpty) {
+      return ListView(
+        children: <Widget>[
+          ListTile(
+            title: Text('-- Todos --'),
+            trailing: Icon(Icons.check),
+            onTap: () {
+              _orderPageBloc.changeApplicantSelected(null);
+              Navigator.pop(context);
+            },
+          ),
+          Divider(),
+          Container(
+              margin: EdgeInsets.all(20.0),
+              child: Text(
+                'Ingrese el nombre del aplicante a buscar.',
+                style: TextStyle(fontSize: 16.0),
+              ))
+        ],
+      );
+    } else {
+      _orderPageBloc.changeApplicantSearch(query);
+
+      return StreamBuilder(
+        stream: _orderPageBloc.employees,
+        builder:
+            (BuildContext context, AsyncSnapshot<List<Employed>> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return centerCircularProgress();
+            default:
+              if (snapshot.hasError)
+                return Container(
+                  child: Text(snapshot.error.toString()),
+                );
+
+              if (!snapshot.hasData ||
+                  snapshot.data == null ||
+                  snapshot.data.length == 0)
+                return Container(
+                  margin: EdgeInsets.only(left: 10.0, top: 10.0),
+                  child: Text('Lo sentimos no existen coincidencias'),
+                );
+
+              return ListView.separated(
+                itemCount: snapshot.data.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return ListTile(
+                    title: Text(
+                        '${snapshot.data[index].lastName} ${snapshot.data[index].firstName}'),
+                    trailing: Icon(Icons.check),
+                    onTap: () {
                       _orderPageBloc
-                          .changeTravelSelected(snapshot.data[index]);
+                          .changeApplicantSelected(snapshot.data[index]);
                       Navigator.pop(context);
                     },
                   );
