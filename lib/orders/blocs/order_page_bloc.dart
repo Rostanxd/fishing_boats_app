@@ -9,6 +9,7 @@ import 'package:rxdart/rxdart.dart';
 
 class OrderPageBloc extends Object implements BlocBase {
   final _user = BehaviorSubject<User>();
+  final _id = BehaviorSubject<String>();
   final _warehouseSearch = BehaviorSubject<String>();
   final _warehouseSelected = BehaviorSubject<Warehouse>();
   final _branchSearch = BehaviorSubject<String>();
@@ -33,6 +34,8 @@ class OrderPageBloc extends Object implements BlocBase {
 
   /// Observables
   ValueObservable<User> get userLogged => _user.stream;
+
+  ValueObservable<String> get id => _id.stream;
 
   Observable<Warehouse> get warehouseSelected => _warehouseSelected.stream;
 
@@ -99,6 +102,7 @@ class OrderPageBloc extends Object implements BlocBase {
     _loading.sink.add(true);
     await _ordersRepository
         .fetchOrders(
+            _id.value != null ? int.parse(_id.value) : 0,
             _warehouseSelected.value,
             _branchSelected.value,
             _travelSelected.value,
@@ -146,7 +150,12 @@ class OrderPageBloc extends Object implements BlocBase {
 
   Function(String) get changeProvider => _providerName.add;
 
+  void changeId(String id) {
+    _id.sink.add(id);
+  }
+
   void cleanFilters() {
+    _observation.sink.add('');
     _warehouseSelected.sink.add(null);
     _branchSelected.sink.add(null);
     _travelSelected.sink.add(null);
@@ -158,9 +167,23 @@ class OrderPageBloc extends Object implements BlocBase {
     _providerName.sink.add('');
   }
 
+  void addNewOrderToList(Order order) {
+    List<Order> orders = _orders.value;
+    orders.add(order);
+    _orders.sink.add(orders);
+  }
+
+  void updateOrderInList(Order order) {
+    List<Order> orders = _orders.value;
+    int index = orders.indexWhere((o) => o.id == order.id);
+    orders.removeAt(index);
+    orders.insert(index, order);
+  }
+
   @override
   void dispose() {
     _user.close();
+    _id.close();
     _warehouseSearch.close();
     _warehouseSelected.close();
     _branchSearch.close();

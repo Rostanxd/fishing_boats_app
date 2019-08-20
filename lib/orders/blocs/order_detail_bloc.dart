@@ -162,6 +162,7 @@ class OrderDetailBloc extends BlocBase {
       _orderDetail.sink.add(_order.detail);
       _activeForm.sink.add(false);
     } else {
+      _state.sink.add('');
       _date.sink.add(DateTime.now());
       _activeForm.sink.add(true);
     }
@@ -180,16 +181,12 @@ class OrderDetailBloc extends BlocBase {
   }
 
   Future<bool> updateDetailLine(int index) async {
-    if (_detailDescription.value == '' && _detailQuantity.value == 0) {
+    if (_detailDescription.value == '' || _detailQuantity.value == 0) {
       _message.sink.add(
           'No ha especificado cantidad y el detalle. Verifique por favor.');
       return false;
     }
 
-    if (_detailDescription.value == '') {
-      _message.sink.add('No ha especificado el detalle. Verifique por favor.');
-      return false;
-    }
     List<OrderDetail> _orderDetailToUpd = _orderDetail.value;
     if (_orderDetailToUpd.length != 0) {
       _orderDetailToUpd[index].quantity = _detailQuantity.value;
@@ -208,20 +205,14 @@ class OrderDetailBloc extends BlocBase {
   }
 
   Future<bool> addNewDetailLine() async {
-    if (_detailDescription.value == '' && _detailQuantity.value == 0) {
+    if (_detailDescription.value == '' || _detailQuantity.value == 0) {
       _message.sink.add(
-          'No ha especificado cantidad y el detalle. Verifique por favor.');
-      return false;
-    }
-
-    if (_detailDescription.value == '') {
-      _message.sink.add('No ha especificado el detalle. Verifique por favor.');
+          'No ha especificado la cantidad y/o el detalle. Verifique por favor.');
       return false;
     }
 
     List<OrderDetail> _orderDetailToUpd = List<OrderDetail>();
-    if (_orderDetail.value != null)
-      _orderDetailToUpd = _orderDetail.value;
+    if (_orderDetail.value != null) _orderDetailToUpd = _orderDetail.value;
 
     _orderDetailToUpd
         .add(OrderDetail(0, _detailQuantity.value, _detailDescription.value));
@@ -229,7 +220,7 @@ class OrderDetailBloc extends BlocBase {
     return true;
   }
 
-  Future<void> createOrder() async {
+  Future<Order> createOrder() async {
     _loading.sink.add(true);
     Order _order = Order(
         0,
@@ -243,27 +234,62 @@ class OrderDetailBloc extends BlocBase {
         '',
         _user.value.user,
         DateTime.now(),
+        null,
         _orderDetail.value);
-    _ordersRepository.createOrder(_order).then((value) {
+    await _ordersRepository.createOrder(_order).then((value) {
+      _order.id = value;
       _id.sink.add(value);
       _state.sink.add('P');
+      _message.sink.add('Orden genearada con éxito.');
       _loading.sink.add(false);
     }, onError: (error) {
       _message.sink.add('Error: ${error.toString()}');
       _loading.sink.add(false);
     });
+
+    return _order;
   }
 
-  Future<void> savingOrder() async {
-    _state.sink.add('P');
-  }
+  Future<Order> updatingOrder(String stateToUpd) async {
+    String message;
+    _loading.sink.add(true);
 
-  Future<void> processingOrder() async {
-    _state.sink.add('A');
-  }
+    Order _order = Order(
+        _id.value,
+        _date.value,
+        stateToUpd,
+        _observation.value,
+        _warehouseSelected.value,
+        _branchSelected.value,
+        _applicantSelected.value,
+        _travelSelected.value,
+        '',
+        _user.value.user,
+        DateTime.now(),
+        stateToUpd == 'A' ? DateTime.now() : null,
+        _orderDetail.value);
 
-  Future<void> cancelingOrder() async {
-    _state.sink.add('X');
+    await _ordersRepository.updateOrder(_order).then((value) {
+      switch (stateToUpd) {
+        case "P":
+          message = 'Orden actualizada con éxito';
+          break;
+        case "A":
+          message = 'Orden procesada con éxito';
+          break;
+        case "X":
+          message = 'Orden anulada con éxito';
+          break;
+      }
+      _state.sink.add(stateToUpd);
+      _message.sink.add(message);
+      _loading.sink.add(false);
+    }, onError: (error) {
+      _message.sink.add('Error: ${error.toString()}');
+      _loading.sink.add(false);
+    }).timeout(Duration(seconds: 15));
+
+    return _order;
   }
 
   @override

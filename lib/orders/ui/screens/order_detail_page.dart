@@ -1,5 +1,6 @@
 import 'package:fishing_boats_app/authentication/blocs/authentication_bloc.dart';
 import 'package:fishing_boats_app/orders/blocs/order_detail_bloc.dart';
+import 'package:fishing_boats_app/orders/blocs/order_page_bloc.dart';
 import 'package:fishing_boats_app/orders/models/branch.dart';
 import 'package:fishing_boats_app/orders/models/employed.dart';
 import 'package:fishing_boats_app/orders/models/order.dart';
@@ -11,9 +12,11 @@ import 'package:intl/intl.dart';
 
 class OrderDetailPage extends StatefulWidget {
   final AuthenticationBloc authenticationBloc;
+  final OrderPageBloc orderPageBloc;
   final Order order;
 
-  const OrderDetailPage({Key key, this.order, this.authenticationBloc})
+  const OrderDetailPage(
+      {Key key, this.order, this.authenticationBloc, this.orderPageBloc})
       : super(key: key);
 
   @override
@@ -22,31 +25,15 @@ class OrderDetailPage extends StatefulWidget {
 
 class _OrderDetailPageState extends State<OrderDetailPage> {
   final OrderDetailBloc _orderDetailBloc = OrderDetailBloc();
-  final DateTime _now = new DateTime.now();
-  final DateTime _defaultDate = DateTime.now();
   final TextEditingController _observationCtrl = TextEditingController();
   final formatter = new DateFormat('yyyy-MM-dd');
 
+  OrderPageBloc _orderPageBloc;
   Order _order;
-
-  ///  Future to show the date picker
-  Future _selectDate() async {
-    DateTime picked = await showDatePicker(
-        context: context,
-        initialDate: _orderDetailBloc.date.value.toString().isNotEmpty &&
-                _orderDetailBloc.date.value != null
-            ? _orderDetailBloc.date.value
-            : _defaultDate,
-        firstDate: DateTime(_now.year),
-        lastDate: DateTime(_now.year + 1));
-
-    if (picked != null) {
-      _orderDetailBloc.changeDate(picked);
-    }
-  }
 
   @override
   void initState() {
+    _orderPageBloc = widget.orderPageBloc;
     _order = widget.order;
     _orderDetailBloc.loadStreamData(_order);
     _orderDetailBloc.changeUser(widget.authenticationBloc.userLogged.value);
@@ -82,41 +69,44 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: StreamBuilder(
-          stream: _orderDetailBloc.id,
-          builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-            return snapshot.hasData
-                ? Text('Pedido #${snapshot.data.toString()}')
-                : Text('Nuevo pedido');
-          },
-        ),
-        backgroundColor:
-            _order != null ? _evaluateOrderColor(_order.state) : Colors.grey,
-        bottom: PreferredSize(
-          preferredSize: Size(double.infinity, 1.0),
-          child: StreamBuilder(
-              stream: _orderDetailBloc.loading,
+    return StreamBuilder(
+      stream: _orderDetailBloc.state,
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        return Scaffold(
+          appBar: AppBar(
+            title: StreamBuilder(
+              stream: _orderDetailBloc.id,
+              builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+                return snapshot.hasData
+                    ? Text('Pedido #${snapshot.data.toString()}')
+                    : Text('Nuevo pedido');
+              },
+            ),
+            backgroundColor: _evaluateOrderColor(snapshot.data),
+            bottom: PreferredSize(
+              preferredSize: Size(double.infinity, 1.0),
+              child: StreamBuilder(
+                  stream: _orderDetailBloc.loading,
+                  builder:
+                      (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                    return snapshot.data != null && snapshot.data
+                        ? LinearProgressIndicator()
+                        : Container(
+                            child: null,
+                          );
+                  }),
+            ),
+          ),
+          body: StreamBuilder(
+              stream: _orderDetailBloc.activeForm,
               builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
                 return snapshot.data != null && snapshot.data
-                    ? LinearProgressIndicator()
-                    : Container(
-                        child: null,
-                      );
+                    ? _editableForm()
+                    : _displayForm();
               }),
-        ),
-      ),
-      body: StreamBuilder(
-          stream: _orderDetailBloc.activeForm,
-          builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-            return snapshot.data != null && snapshot.data
-                ? _editableForm()
-                : _displayForm();
-          }),
-      persistentFooterButtons: _order != null
-          ? _evaluateActionButtons(_order.state)
-          : _evaluateActionButtons(''),
+          persistentFooterButtons: _evaluateActionButtons(snapshot.data),
+        );
+      },
     );
   }
 
@@ -186,7 +176,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             return ListTile(
               title: Text(
                   snapshot.hasData ? formatter.format(snapshot.data) : 'N/A'),
-              subtitle: Text('Fecha registro desde'),
+              subtitle: Text('Fecha registro'),
               onTap: () {},
             );
           },
@@ -367,7 +357,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               title: Text(snapshot.hasData && snapshot.data != null
                   ? '${snapshot.data.lastName.trim()} ${snapshot.data.firstName.trim()}'
                   : '-- Todas --'),
-              subtitle: Text('Aplicante'),
+              subtitle: Text('Solicitante'),
               trailing: Icon(Icons.navigate_next),
               onTap: () {
                 showSearch(
@@ -388,9 +378,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   ? formatter.format(snapshot.data)
                   : 'Ninguno'),
               subtitle: Text('Fecha registro'),
-              trailing: Icon(Icons.navigate_next),
+//              trailing: Icon(Icons.navigate_next),
               onTap: () {
-                _selectDate();
+//                _selectDate();
               },
             );
           },
@@ -405,7 +395,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         Container(
           padding: EdgeInsets.only(left: 15.0, right: 15.0),
           child: TextField(
-            maxLines: 5,
+            minLines: 1,
+            maxLines: 3,
             controller: _observationCtrl,
             onChanged: _orderDetailBloc.changeObservation,
           ),
@@ -538,24 +529,15 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       case '':
         return [
           RaisedButton(
-            color: Colors.grey,
-            child: Text(
-              'Cancelar',
-              style: TextStyle(color: Colors.white),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-          RaisedButton(
-            color: Colors.blueAccent,
+            color: Colors.green,
             child: Text(
               'Guardar',
               style: TextStyle(color: Colors.white),
             ),
             onPressed: () {
-              _orderDetailBloc.createOrder().then((v) {
+              _orderDetailBloc.createOrder().then((orderCreated) {
                 _orderDetailBloc.changeActiveForm(false);
+                _orderPageBloc.addNewOrderToList(orderCreated);
               });
             },
           ),
@@ -565,39 +547,62 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       case 'P':
         return [
           RaisedButton(
-            color: Colors.grey,
-            child: Text(
-              'Cancelar',
-              style: TextStyle(color: Colors.white),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-          RaisedButton(
             color: Colors.redAccent,
             child: Text(
               'Anular',
               style: TextStyle(color: Colors.white),
             ),
-            onPressed: () {},
+            onPressed: () {
+              _orderDetailBloc.updatingOrder('X').then((orderUpdated){
+                _orderPageBloc.updateOrderInList(orderUpdated);
+              });
+            },
           ),
           StreamBuilder(
             stream: _orderDetailBloc.activeForm,
             builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
               return snapshot.data != null && snapshot.data
                   ? RaisedButton(
+                      color: Colors.grey,
+                      child: Text(
+                        'Procesar',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () {},
+                    )
+                  : RaisedButton(
                       color: Colors.blueAccent,
+                      child: Text(
+                        'Procesar',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () {
+                        _orderDetailBloc.updatingOrder('A').then((orderUpdated){
+                          _orderPageBloc.updateOrderInList(orderUpdated);
+                        });
+                      },
+                    );
+            },
+          ),
+          StreamBuilder(
+            stream: _orderDetailBloc.activeForm,
+            builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+              return snapshot.data != null && snapshot.data
+                  ? RaisedButton(
+                      color: Colors.green,
                       child: Text(
                         'Guardar',
                         style: TextStyle(color: Colors.white),
                       ),
                       onPressed: () {
+                        _orderDetailBloc.updatingOrder('P').then((orderUpdated){
+                          _orderPageBloc.updateOrderInList(orderUpdated);
+                        });
                         _orderDetailBloc.changeActiveForm(false);
                       },
                     )
                   : RaisedButton(
-                      color: Colors.blueAccent,
+                      color: Colors.green,
                       child: Text(
                         'Editar',
                         style: TextStyle(color: Colors.white),
@@ -614,22 +619,16 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       case 'A':
         return [
           RaisedButton(
-            color: Colors.grey,
-            child: Text(
-              'Cancelar',
-              style: TextStyle(color: Colors.white),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-          RaisedButton(
             color: Colors.redAccent,
             child: Text(
               'Anular',
               style: TextStyle(color: Colors.white),
             ),
-            onPressed: () {},
+            onPressed: () {
+              _orderDetailBloc.updatingOrder('X').then((orderUpdated){
+                _orderPageBloc.updateOrderInList(orderUpdated);
+              });
+            },
           ),
         ];
 
@@ -637,22 +636,16 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       case 'X':
         return [
           RaisedButton(
-            color: Colors.grey,
-            child: Text(
-              'Cancelar',
-              style: TextStyle(color: Colors.white),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-          RaisedButton(
             color: Colors.blueAccent,
             child: Text(
               'Procesar',
               style: TextStyle(color: Colors.white),
             ),
-            onPressed: () {},
+            onPressed: () {
+              _orderDetailBloc.updatingOrder('A').then((orderUpdated){
+                _orderPageBloc.updateOrderInList(orderUpdated);
+              });
+            },
           ),
         ];
     }
@@ -1172,7 +1165,7 @@ class EmployedSearch extends SearchDelegate<String> {
           Container(
               margin: EdgeInsets.all(20.0),
               child: Text(
-                'Ingrese el nombre del aplicante a buscar.',
+                'Ingrese el nombre del solicitante a buscar.',
                 style: TextStyle(fontSize: 16.0),
               ))
         ],

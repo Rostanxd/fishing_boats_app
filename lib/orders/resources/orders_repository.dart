@@ -30,6 +30,7 @@ class OrdersRepository {
       _employedApi.fetchEmployees(name);
 
   Future<List<Order>> fetchOrders(
+          int id,
           Warehouse warehouse,
           Branch branch,
           Warehouse travel,
@@ -39,8 +40,10 @@ class OrdersRepository {
           String state,
           String obs,
           String providerName) =>
-      _orderApi.fetchOrders(warehouse, branch, travel, employed, dateFrom,
+      _orderApi.fetchOrders(id, warehouse, branch, travel, employed, dateFrom,
           dateTo, state, obs, providerName);
 
   Future<int> createOrder(Order order) => _orderApi.createOrder(order);
+
+  Future<void> updateOrder(Order order) => _orderApi.updateOrder(order);
 }

@@ -119,6 +119,7 @@ class _OrderDetailLinePageState extends State<OrderDetailLinePage> {
                 return Container(
                   padding: EdgeInsets.only(left: 15.0, right: 10.0),
                   child: TextField(
+                    minLines: 1,
                     maxLines: 5,
                     onChanged: _orderDetailBloc.changeDetailDescription,
                     controller: _descriptionCtrl,

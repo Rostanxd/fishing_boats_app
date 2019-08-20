@@ -15,6 +15,7 @@ class Order extends Object {
   String providerName;
   String userCreated;
   DateTime dateCreated;
+  DateTime dateApproved;
   List<OrderDetail> detail;
 
   Order(
@@ -29,6 +30,7 @@ class Order extends Object {
       this.providerName,
       this.userCreated,
       this.dateCreated,
+      this.dateApproved,
       this.detail);
 
   Order.fromFishBackEndApiRest(Map<String, dynamic> jsonData) {
@@ -52,6 +54,9 @@ class Order extends Object {
         jsonData['provider_name'] != null ? jsonData['provider_name'] : '';
     this.userCreated = jsonData['user_created'];
     this.dateCreated = DateTime.parse(jsonData['date_created']);
+    this.dateApproved = jsonData['date_created'] != null
+        ? DateTime.parse(jsonData['date_created'])
+        : null;
 
     detailIterable = jsonData['detail'];
     if (detailIterable.length > 0) {
@@ -63,18 +68,21 @@ class Order extends Object {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': this.id,
-    'date': this.date.toString(),
-    'observation': this.observation,
-    'warehouse': this.warehouse.toJson(),
-    'branch': this.branch.toJson(),
-    'travel': this.travel.toJson(),
-    'applicant': this.applicant.toJson(),
-    'providerName': this.providerName,
-    'userCreated': this.userCreated,
-    'dateCreated': this.dateCreated.toString(),
-    'detail': this.detail.map((line) => line.toJson()).toList(),
-  };
+        'id': this.id,
+        'date': this.date.toString(),
+        'observation': this.observation,
+        'state': this.state,
+        'warehouse': this.warehouse.toJson(),
+        'branch': this.branch.toJson(),
+        'travel': this.travel.toJson(),
+        'applicant': this.applicant.toJson(),
+        'providerName': this.providerName,
+        'userCreated': this.userCreated,
+        'dateCreated': this.dateCreated.toString(),
+        'dateApproved':
+            this.dateApproved != null ? this.dateApproved.toString() : '',
+        'detail': this.detail.map((line) => line.toJson()).toList(),
+      };
 
   @override
   String toString() {
@@ -99,10 +107,10 @@ class OrderDetail extends Object {
   }
 
   Map<String, dynamic> toJson() => {
-    'sequence': this.sequence.toString(),
-    'quantity': this.quantity.toString(),
-    'detail': this.detail,
-  };
+        'sequence': this.sequence.toString(),
+        'quantity': this.quantity.toString(),
+        'detail': this.detail,
+      };
 
   @override
   String toString() {
