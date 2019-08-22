@@ -36,9 +36,17 @@ class OrderApi {
     if (obs == null) obs = '';
 
     final response =
-        await http.get('${Connection.host}:${Connection.port}/orders/list/'
-            '$dateFromSt/$dateToSt/$orderId/$warehouseId/$branchId/$travelId/'
-            '$employedId/$state/$obs/$providerName/');
+        await http.get('${Connection.host}:${Connection.port}/orders/list/?'
+            'date_from=$dateFromSt'
+            '&date_to=$dateToSt'
+            '&order_id=$orderId'
+            '&warehouse_id=$warehouseId'
+            '&branch_id=$branchId'
+            '&travel_id=$travelId'
+            '&employed_id=$employedId'
+            '&state=$state'
+            '&observation=$obs'
+            '&provider_name=$providerName');
 
     if (response.statusCode == 200) {
       data = json.decode(utf8.decode(response.bodyBytes));
