@@ -20,7 +20,7 @@ class _UserDrawerState extends State<UserDrawer> {
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
 
     /// Fetch the access
-    _authenticationBloc.fetchAccessByUser();
+    _authenticationBloc.fetchAccessByRole();
 
     super.didChangeDependencies();
   }
@@ -49,15 +49,14 @@ class _UserDrawerState extends State<UserDrawer> {
                 switch (snapshot.connectionState) {
                   case ConnectionState.waiting:
                     return Container(
-                      width: 20.0,
-                      height: 20.0,
                       margin: EdgeInsets.only(left: 20.0),
-                      child: CircularProgressIndicator(),
+                      child: LinearProgressIndicator(),
                     );
                     break;
                   default:
                     if (snapshot.hasData &&
-                        snapshot.data[0].program.code == '001') {
+                        snapshot.data[0].program.code == '001' &&
+                        snapshot.data[0].execute == '1') {
                       return ListTile(
                         title: Text('Pedidos'),
                         leading: Icon(Icons.receipt),
@@ -68,6 +67,7 @@ class _UserDrawerState extends State<UserDrawer> {
                               MaterialPageRoute(
                                   builder: (context) => OrderPage(
                                         authenticationBloc: _authenticationBloc,
+                                        accessByRole: snapshot.data[0],
                                       )));
                         },
                       );

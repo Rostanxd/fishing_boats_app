@@ -6,8 +6,14 @@ class AuthenticationRepository {
   final AuthenticationFishBackEnd _authenticationFishBackEnd =
       AuthenticationFishBackEnd();
 
-  Future<User> logIn(String user, String password) =>
-      _authenticationFishBackEnd.logIn(user, password);
+  Future<User> logIn(String user, String password, String deviceId) =>
+      _authenticationFishBackEnd.logIn(user, password, deviceId);
+
+  Future<void> logOut(String user, String deviceId) =>
+      _authenticationFishBackEnd.logOut(user, deviceId);
+
+  Future<User> authenticatedUser(String deviceId) =>
+      _authenticationFishBackEnd.authenticatedUser(deviceId);
 
   Future<List<AccessByRole>> fetchAccessByRole(Role role) =>
       _authenticationFishBackEnd.fetchAccessByRole(role);

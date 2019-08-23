@@ -1,4 +1,5 @@
 import 'package:fishing_boats_app/authentication/blocs/authentication_bloc.dart';
+import 'package:fishing_boats_app/authentication/models/role.dart';
 import 'package:fishing_boats_app/orders/blocs/order_detail_bloc.dart';
 import 'package:fishing_boats_app/orders/blocs/order_page_bloc.dart';
 import 'package:fishing_boats_app/orders/models/branch.dart';
@@ -528,36 +529,64 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       /// New order
       case '':
         return [
-          RaisedButton(
-            color: Colors.green,
-            child: Text(
-              'Guardar',
-              style: TextStyle(color: Colors.white),
-            ),
-            onPressed: () {
-              _orderDetailBloc.createOrder().then((orderCreated) {
-                _orderDetailBloc.changeActiveForm(false);
-                _orderPageBloc.addNewOrderToList(orderCreated);
-              });
-            },
-          ),
+          StreamBuilder<AccessByRole>(
+              stream: _orderPageBloc.access,
+              builder: (context, snapshot) {
+                return snapshot.hasData && snapshot.data.register == '1'
+                    ? RaisedButton(
+                        color: Colors.green,
+                        child: Text(
+                          'Guardar',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {
+                          _orderDetailBloc.createOrder().then((orderCreated) {
+                            _orderDetailBloc.changeActiveForm(false);
+                            _orderPageBloc.addNewOrderToList(orderCreated);
+                          });
+                        },
+                      )
+                    : RaisedButton(
+                        color: Colors.grey,
+                        child: Text(
+                          'Guardar',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {},
+                      );
+              }),
         ];
 
       /// Pending order
       case 'P':
         return [
-          RaisedButton(
-            color: Colors.redAccent,
-            child: Text(
-              'Anular',
-              style: TextStyle(color: Colors.white),
-            ),
-            onPressed: () {
-              _orderDetailBloc.updatingOrder('X').then((orderUpdated){
-                _orderPageBloc.updateOrderInList(orderUpdated);
-              });
-            },
-          ),
+          StreamBuilder<AccessByRole>(
+              stream: _orderPageBloc.access,
+              builder: (context, snapshot) {
+                return snapshot.hasData && snapshot.data.delete == '1'
+                    ? RaisedButton(
+                        color: Colors.redAccent,
+                        child: Text(
+                          'Anular',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {
+                          _orderDetailBloc
+                              .updatingOrder('X')
+                              .then((orderUpdated) {
+                            _orderPageBloc.updateOrderInList(orderUpdated);
+                          });
+                        },
+                      )
+                    : RaisedButton(
+                        color: Colors.grey,
+                        child: Text(
+                          'Anular',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {},
+                      );
+              }),
           StreamBuilder(
             stream: _orderDetailBloc.activeForm,
             builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
@@ -570,16 +599,34 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                       ),
                       onPressed: () {},
                     )
-                  : RaisedButton(
-                      color: Colors.blueAccent,
-                      child: Text(
-                        'Procesar',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      onPressed: () {
-                        _orderDetailBloc.updatingOrder('A').then((orderUpdated){
-                          _orderPageBloc.updateOrderInList(orderUpdated);
-                        });
+                  : StreamBuilder<AccessByRole>(
+                      stream: _orderPageBloc.access,
+                      builder: (BuildContext context,
+                          AsyncSnapshot<AccessByRole> snapshot) {
+                        snapshot.hasData && snapshot.data.process == '1'
+                            ? RaisedButton(
+                                color: Colors.blueAccent,
+                                child: Text(
+                                  'Procesar',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                onPressed: () {
+                                  _orderDetailBloc
+                                      .updatingOrder('A')
+                                      .then((orderUpdated) {
+                                    _orderPageBloc
+                                        .updateOrderInList(orderUpdated);
+                                  });
+                                },
+                              )
+                            : RaisedButton(
+                                color: Colors.grey,
+                                child: Text(
+                                  'Procesar',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                onPressed: () {},
+                              );
                       },
                     );
             },
@@ -588,27 +635,60 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             stream: _orderDetailBloc.activeForm,
             builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
               return snapshot.data != null && snapshot.data
-                  ? RaisedButton(
-                      color: Colors.green,
-                      child: Text(
-                        'Guardar',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      onPressed: () {
-                        _orderDetailBloc.updatingOrder('P').then((orderUpdated){
-                          _orderPageBloc.updateOrderInList(orderUpdated);
-                        });
-                        _orderDetailBloc.changeActiveForm(false);
+                  ? StreamBuilder<AccessByRole>(
+                      stream: _orderPageBloc.access,
+                      builder: (BuildContext context,
+                          AsyncSnapshot<AccessByRole> snapshot) {
+                        return snapshot.hasData && snapshot.data.register == '1'
+                            ? RaisedButton(
+                                color: Colors.green,
+                                child: Text(
+                                  'Guardar',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                onPressed: () {
+                                  _orderDetailBloc
+                                      .updatingOrder('P')
+                                      .then((orderUpdated) {
+                                    _orderPageBloc
+                                        .updateOrderInList(orderUpdated);
+                                  });
+                                  _orderDetailBloc.changeActiveForm(false);
+                                },
+                              )
+                            : RaisedButton(
+                                color: Colors.grey,
+                                child: Text(
+                                  'Guardar',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                onPressed: () {},
+                              );
                       },
                     )
-                  : RaisedButton(
-                      color: Colors.green,
-                      child: Text(
-                        'Editar',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      onPressed: () {
-                        _orderDetailBloc.changeActiveForm(true);
+                  : StreamBuilder<AccessByRole>(
+                      stream: _orderPageBloc.access,
+                      builder: (BuildContext context,
+                          AsyncSnapshot<AccessByRole> snapshot) {
+                        return snapshot.hasData && snapshot.data.edit == '1'
+                            ? RaisedButton(
+                                color: Colors.green,
+                                child: Text(
+                                  'Editar',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                onPressed: () {
+                                  _orderDetailBloc.changeActiveForm(true);
+                                },
+                              )
+                            : RaisedButton(
+                                color: Colors.grey,
+                                child: Text(
+                                  'Editar',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                onPressed: () {},
+                              );
                       },
                     );
             },
@@ -618,35 +698,65 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       /// Order approved
       case 'A':
         return [
-          RaisedButton(
-            color: Colors.redAccent,
-            child: Text(
-              'Anular',
-              style: TextStyle(color: Colors.white),
-            ),
-            onPressed: () {
-              _orderDetailBloc.updatingOrder('X').then((orderUpdated){
-                _orderPageBloc.updateOrderInList(orderUpdated);
-              });
-            },
-          ),
+          StreamBuilder<AccessByRole>(
+              stream: _orderPageBloc.access,
+              builder: (context, snapshot) {
+                return snapshot.hasData && snapshot.data.delete == '1'
+                    ? RaisedButton(
+                        color: Colors.redAccent,
+                        child: Text(
+                          'Anular',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {
+                          _orderDetailBloc
+                              .updatingOrder('X')
+                              .then((orderUpdated) {
+                            _orderPageBloc.updateOrderInList(orderUpdated);
+                          });
+                        },
+                      )
+                    : RaisedButton(
+                        color: Colors.grey,
+                        child: Text(
+                          'Anular',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {},
+                      );
+              }),
         ];
 
       /// Order canceled
       case 'X':
         return [
-          RaisedButton(
-            color: Colors.blueAccent,
-            child: Text(
-              'Procesar',
-              style: TextStyle(color: Colors.white),
-            ),
-            onPressed: () {
-              _orderDetailBloc.updatingOrder('A').then((orderUpdated){
-                _orderPageBloc.updateOrderInList(orderUpdated);
-              });
-            },
-          ),
+          StreamBuilder<AccessByRole>(
+              stream: _orderPageBloc.access,
+              builder: (context, snapshot) {
+                return snapshot.hasData && snapshot.data.process == '1'
+                    ? RaisedButton(
+                        color: Colors.blueAccent,
+                        child: Text(
+                          'Procesar',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {
+                          _orderDetailBloc
+                              .updatingOrder('A')
+                              .then((orderUpdated) {
+                            _orderPageBloc.updateOrderInList(orderUpdated);
+                          });
+                        },
+                      )
+                    : RaisedButton(
+                        color: Colors.grey,
+                        child: Text(
+                          'Procesar',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {},
+                      );
+              }),
         ];
     }
   }

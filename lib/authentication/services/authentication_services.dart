@@ -6,15 +6,37 @@ import 'package:fishing_boats_app/models/connection.dart';
 import 'package:http/http.dart' as http;
 
 class AuthenticationFishBackEnd {
-  Future<User> logIn(String user, String password) async {
-    final response = await http.get(
-        '${Connection.host}:${Connection.port}/maintenance/login/$user/$password');
+  Future<User> logIn(String user, String password, String deviceId) async {
+    final response = await http
+        .get('${Connection.host}:${Connection.port}/maintenance/login/'
+            '$user/$password/$deviceId');
     if (response.statusCode == 200) {
       return User.fromFishBackEndApiRest(
           json.decode(utf8.decode(response.bodyBytes)));
     } else {
       if (response.statusCode == 404) return null;
       throw Exception('Failed to login. Status: ${response.statusCode}');
+    }
+  }
+
+  Future<void> logOut(String user, String deviceId) async {
+    final response = await http
+        .get('${Connection.host}:${Connection.port}/maintenance/logOut/'
+            '$user/$deviceId');
+    if (response.statusCode != 200) {
+      throw Exception('Error finalizando la sesión.');
+    }
+  }
+
+  Future<User> authenticatedUser(String deviceId) async {
+    final response = await http.get(
+        '${Connection.host}:${Connection.port}/maintenance/userAuthenticated/'
+        '$deviceId');
+    if (response.statusCode == 200) {
+      return User.fromFishBackEndApiRest(
+          json.decode(utf8.decode(response.bodyBytes)));
+    } else {
+      return null;
     }
   }
 

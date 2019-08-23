@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fishing_boats_app/authentication/blocs/authentication_bloc.dart';
 import 'package:fishing_boats_app/authentication/models/user.dart';
 import 'package:fishing_boats_app/authentication/ui/screens/login_page.dart';
@@ -16,6 +18,7 @@ class _AuthenticationRootPageState extends State<AuthenticationRootPage> {
   @override
   void didChangeDependencies() {
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
+    _authenticationBloc.fetchDeviceInfo(Platform.isAndroid);
     super.didChangeDependencies();
   }
 
@@ -29,9 +32,19 @@ class _AuthenticationRootPageState extends State<AuthenticationRootPage> {
       home: StreamBuilder(
         stream: _authenticationBloc.userLogged,
         builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
-          return snapshot.hasData && snapshot.data != null
-              ? HomePage()
-              : LoginPage();
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return Container(
+                color: Colors.white,
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+              break;
+            default:
+              if (snapshot.hasData && snapshot.data != null) return HomePage();
+              return LoginPage();
+          }
         },
       ),
     );

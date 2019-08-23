@@ -33,6 +33,9 @@ dependencies:
   # Dates
   intl: ^0.15.8
 
+  # To provide detailed information about the device
+  device_info: ^0.4.0+2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,3 +1,4 @@
+import 'package:fishing_boats_app/authentication/models/role.dart';
 import 'package:fishing_boats_app/authentication/models/user.dart';
 import 'package:fishing_boats_app/models/bloc_base.dart';
 import 'package:fishing_boats_app/orders/models/branch.dart';
@@ -30,6 +31,7 @@ class OrderPageBloc extends Object implements BlocBase {
   final _orders = BehaviorSubject<List<Order>>();
   final _message = BehaviorSubject<String>();
   final _loading = BehaviorSubject<bool>();
+  final _access = BehaviorSubject<AccessByRole>();
   final OrdersRepository _ordersRepository = OrdersRepository();
 
   /// Observables
@@ -65,6 +67,8 @@ class OrderPageBloc extends Object implements BlocBase {
   ValueObservable<String> get provider => _providerName.stream;
 
   Observable<bool> get loading => _loading.stream;
+
+  Observable<AccessByRole> get access => _access.stream;
 
   /// Functions
   Stream<List<Warehouse>> get warehouses => _warehouseSearch
@@ -150,6 +154,8 @@ class OrderPageBloc extends Object implements BlocBase {
 
   Function(String) get changeProvider => _providerName.add;
 
+  Function(AccessByRole) get changeAccess => _access.add;
+
   void changeId(String id) {
     _id.sink.add(id);
   }
@@ -204,5 +210,6 @@ class OrderPageBloc extends Object implements BlocBase {
     _orders.close();
     _message.close();
     _loading.close();
+    _access.close();
   }
 }

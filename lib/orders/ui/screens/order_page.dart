@@ -1,4 +1,5 @@
 import 'package:fishing_boats_app/authentication/blocs/authentication_bloc.dart';
+import 'package:fishing_boats_app/authentication/models/role.dart';
 import 'package:fishing_boats_app/orders/blocs/order_page_bloc.dart';
 import 'package:fishing_boats_app/orders/models/order.dart';
 import 'package:fishing_boats_app/orders/ui/screens/order_detail_page.dart';
@@ -8,8 +9,10 @@ import 'order_filters_page.dart';
 
 class OrderPage extends StatefulWidget {
   final AuthenticationBloc authenticationBloc;
+  final AccessByRole accessByRole;
 
-  const OrderPage({Key key, this.authenticationBloc}) : super(key: key);
+  const OrderPage({Key key, this.authenticationBloc, this.accessByRole})
+      : super(key: key);
 
   @override
   _OrderPageState createState() => _OrderPageState();
@@ -24,6 +27,7 @@ class _OrderPageState extends State<OrderPage> {
     _orderPageBloc.cleanFilters();
     _orderPageBloc.fetchOrders();
     _orderPageBloc.changeUser(widget.authenticationBloc.userLogged.value);
+    _orderPageBloc.changeAccess(widget.accessByRole);
     super.initState();
   }
 
@@ -62,19 +66,34 @@ class _OrderPageState extends State<OrderPage> {
               }),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (BuildContext context) => OrderDetailPage(
-                        authenticationBloc: widget.authenticationBloc,
-                        orderPageBloc: _orderPageBloc,
-                      )));
-        },
-        child: Icon(Icons.add),
-        backgroundColor: Colors.blueAccent,
-      ),
+      floatingActionButton: StreamBuilder<AccessByRole>(
+          stream: _orderPageBloc.access,
+          builder: (context, snapshot) {
+            return snapshot.hasData && snapshot.data.register == '1'
+                ? FloatingActionButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (BuildContext context) =>
+                                  OrderDetailPage(
+                                    authenticationBloc:
+                                        widget.authenticationBloc,
+                                    orderPageBloc: _orderPageBloc,
+                                  )));
+                    },
+                    child: Icon(Icons.add),
+                    backgroundColor: Colors.blueAccent,
+                  )
+                : FloatingActionButton(
+                    onPressed: () {},
+                    child: Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
+                    backgroundColor: Colors.grey,
+                  );
+          }),
       body: Container(
         child: StreamBuilder(
           stream: _orderPageBloc.orders,
