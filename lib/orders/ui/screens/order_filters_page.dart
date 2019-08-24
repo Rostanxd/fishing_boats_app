@@ -431,7 +431,7 @@ class WarehouseSearch extends SearchDelegate<String> {
           Container(
               margin: EdgeInsets.all(20.0),
               child: Text(
-                'Ingrese el nombre del barco a buscar.',
+                'Ingrese el nombre de la bodega a buscar.',
                 style: TextStyle(fontSize: 16.0),
               ))
         ],
@@ -560,7 +560,7 @@ class BranchSearch extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if (query.isEmpty) {
+    if (query.isEmpty && _orderPageBloc.userLogged.value.role.code == '01') {
       return ListView(
         children: <Widget>[
           ListTile(
@@ -575,7 +575,7 @@ class BranchSearch extends SearchDelegate<String> {
           Container(
               margin: EdgeInsets.all(20.0),
               child: Text(
-                'Ingrese el nombre de la bodega a buscar.',
+                'Ingrese el nombre del barco a buscar.',
                 style: TextStyle(fontSize: 16.0),
               ))
         ],
@@ -716,7 +716,7 @@ class TravelSearch extends SearchDelegate<String> {
           Container(
               margin: EdgeInsets.all(20.0),
               child: Text(
-                'Ingrese el nombre del barco a buscar.',
+                'Ingrese el nombre del viaje a buscar.',
                 style: TextStyle(fontSize: 16.0),
               ))
         ],
@@ -858,7 +858,7 @@ class EmployedSearch extends SearchDelegate<String> {
           Container(
               margin: EdgeInsets.all(20.0),
               child: Text(
-                'Ingrese el nombre del aplicante a buscar.',
+                'Ingrese el nombre del solicitante a buscar.',
                 style: TextStyle(fontSize: 16.0),
               ))
         ],

@@ -37,7 +37,9 @@ class BranchApi {
     List data;
 
     final response = await http.get(
-        '${Connection.host}:${Connection.port}/orders/branches_by_user/${user.code}/$name');
+        '${Connection.host}:${Connection.port}/orders/branches_by_user/'
+            '${user.code}/'
+            '?name=$name');
 
     if (response.statusCode == 200) {
       data = json.decode(utf8.decode(response.bodyBytes));

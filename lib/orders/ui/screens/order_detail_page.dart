@@ -541,8 +541,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         ),
                         onPressed: () {
                           _orderDetailBloc.createOrder().then((orderCreated) {
-                            _orderDetailBloc.changeActiveForm(false);
-                            _orderPageBloc.addNewOrderToList(orderCreated);
+                            if (orderCreated != null) {
+                              _orderDetailBloc.changeActiveForm(false);
+                              _orderPageBloc.addNewOrderToList(orderCreated);
+                            }
                           });
                         },
                       )
@@ -574,7 +576,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           _orderDetailBloc
                               .updatingOrder('X')
                               .then((orderUpdated) {
-                            _orderPageBloc.updateOrderInList(orderUpdated);
+                            if (orderUpdated != null)
+                              _orderPageBloc.updateOrderInList(orderUpdated);
                           });
                         },
                       )
@@ -603,7 +606,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                       stream: _orderPageBloc.access,
                       builder: (BuildContext context,
                           AsyncSnapshot<AccessByRole> snapshot) {
-                        snapshot.hasData && snapshot.data.process == '1'
+                        return snapshot.hasData && snapshot.data.process == '1'
                             ? RaisedButton(
                                 color: Colors.blueAccent,
                                 child: Text(
@@ -614,8 +617,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                                   _orderDetailBloc
                                       .updatingOrder('A')
                                       .then((orderUpdated) {
-                                    _orderPageBloc
-                                        .updateOrderInList(orderUpdated);
+                                    if (orderUpdated != null)
+                                      _orderPageBloc
+                                          .updateOrderInList(orderUpdated);
                                   });
                                 },
                               )
@@ -650,10 +654,12 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                                   _orderDetailBloc
                                       .updatingOrder('P')
                                       .then((orderUpdated) {
-                                    _orderPageBloc
-                                        .updateOrderInList(orderUpdated);
+                                    if (orderUpdated != null) {
+                                      _orderPageBloc
+                                          .updateOrderInList(orderUpdated);
+                                      _orderDetailBloc.changeActiveForm(false);
+                                    }
                                   });
-                                  _orderDetailBloc.changeActiveForm(false);
                                 },
                               )
                             : RaisedButton(
@@ -712,7 +718,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           _orderDetailBloc
                               .updatingOrder('X')
                               .then((orderUpdated) {
-                            _orderPageBloc.updateOrderInList(orderUpdated);
+                            if (orderUpdated != null)
+                              _orderPageBloc.updateOrderInList(orderUpdated);
                           });
                         },
                       )
@@ -744,7 +751,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           _orderDetailBloc
                               .updatingOrder('A')
                               .then((orderUpdated) {
-                            _orderPageBloc.updateOrderInList(orderUpdated);
+                            if (orderUpdated != null)
+                              _orderPageBloc.updateOrderInList(orderUpdated);
                           });
                         },
                       )
@@ -838,19 +846,10 @@ class WarehouseSearch extends SearchDelegate<String> {
     if (query.isEmpty) {
       return ListView(
         children: <Widget>[
-          ListTile(
-            title: Text('-- Todas --'),
-            trailing: Icon(Icons.check),
-            onTap: () {
-              _orderDetailBloc.changeWarehouse(null);
-              Navigator.pop(context);
-            },
-          ),
-          Divider(),
           Container(
               margin: EdgeInsets.all(20.0),
               child: Text(
-                'Ingrese el nombre del barco a buscar.',
+                'Ingrese el nombre de la bodega a buscar.',
                 style: TextStyle(fontSize: 16.0),
               ))
         ],
@@ -978,22 +977,13 @@ class BranchSearch extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if (query.isEmpty) {
+    if (query.isEmpty && _orderDetailBloc.userLogged.value.role.code == '01') {
       return ListView(
         children: <Widget>[
-          ListTile(
-            title: Text('-- Todos --'),
-            trailing: Icon(Icons.check),
-            onTap: () {
-              _orderDetailBloc.changeBranch(null);
-              Navigator.pop(context);
-            },
-          ),
-          Divider(),
           Container(
               margin: EdgeInsets.all(20.0),
               child: Text(
-                'Ingrese el nombre de la bodega a buscar.',
+                'Ingrese el nombre del barco a buscar.',
                 style: TextStyle(fontSize: 16.0),
               ))
         ],
@@ -1122,19 +1112,10 @@ class TravelSearch extends SearchDelegate<String> {
     if (query.isEmpty) {
       return ListView(
         children: <Widget>[
-          ListTile(
-            title: Text('-- Todas --'),
-            trailing: Icon(Icons.check),
-            onTap: () {
-              _orderDetailBloc.changeTravel(null);
-              Navigator.pop(context);
-            },
-          ),
-          Divider(),
           Container(
               margin: EdgeInsets.all(20.0),
               child: Text(
-                'Ingrese el nombre del barco a buscar.',
+                'Ingrese el nombre del viaje a buscar.',
                 style: TextStyle(fontSize: 16.0),
               ))
         ],
@@ -1263,15 +1244,6 @@ class EmployedSearch extends SearchDelegate<String> {
     if (query.isEmpty) {
       return ListView(
         children: <Widget>[
-          ListTile(
-            title: Text('-- Todos --'),
-            trailing: Icon(Icons.check),
-            onTap: () {
-              _orderDetailBloc.changeApplicant(null);
-              Navigator.pop(context);
-            },
-          ),
-          Divider(),
           Container(
               margin: EdgeInsets.all(20.0),
               child: Text(

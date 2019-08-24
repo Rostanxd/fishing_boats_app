@@ -221,6 +221,10 @@ class OrderDetailBloc extends BlocBase {
   }
 
   Future<Order> createOrder() async {
+    if (!_validateForm()){
+      return null;
+    }
+
     _loading.sink.add(true);
     Order _order = Order(
         0,
@@ -240,17 +244,22 @@ class OrderDetailBloc extends BlocBase {
       _order.id = value;
       _id.sink.add(value);
       _state.sink.add('P');
-      _message.sink.add('Orden genearada con éxito.');
+      _message.sink.add('Orden generada con éxito.');
       _loading.sink.add(false);
     }, onError: (error) {
       _message.sink.add('Error: ${error.toString()}');
       _loading.sink.add(false);
+      return null;
     });
 
     return _order;
   }
 
   Future<Order> updatingOrder(String stateToUpd) async {
+    if (!_validateForm()){
+      return null;
+    }
+
     String message;
     _loading.sink.add(true);
 
@@ -287,9 +296,44 @@ class OrderDetailBloc extends BlocBase {
     }, onError: (error) {
       _message.sink.add('Error: ${error.toString()}');
       _loading.sink.add(false);
+      return null;
     }).timeout(Duration(seconds: 15));
 
     return _order;
+  }
+
+  bool _validateForm() {
+    if (_warehouseSelected.value == null){
+      _message.sink.add('Error, por favor ingrese la bodega');
+      return false;
+    }
+
+    if (_branchSelected.value == null){
+      _message.sink.add('Error, por favor ingrese el barco.');
+      return false;
+    }
+
+    if (_travelSelected.value == null){
+      _message.sink.add('Error, por favor ingrese el viaje');
+      return false;
+    }
+
+    if (_applicantSelected.value == null){
+      _message.sink.add('Error, por favor ingrese el solicitante.');
+      return false;
+    }
+
+    if (_observation.value == null || _observation.value == ''){
+      _message.sink.add('Error, por favor ingrese la observación general.');
+      return false;
+    }
+
+    if (_orderDetail.value == null || _orderDetail.value.length == 0){
+      _message.sink.add('Error, no ha ingresado el detalle de la orden.');
+      return false;
+    }
+
+    return true;
   }
 
   @override
