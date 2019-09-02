@@ -87,9 +87,12 @@ class AuthenticationBloc extends Object implements BlocBase {
   }
 
   Future<void> _fetchAccessByRole(User user) async {
-    await _authenticationRepository.fetchAccessByRole(user.role).then((access) {
-      _accessByRole.sink.add(access);
-    });
+    if (user != null)
+      await _authenticationRepository
+          .fetchAccessByRole(user.role)
+          .then((access) {
+        _accessByRole.sink.add(access);
+      });
   }
 
   Future<void> fetchDeviceInfo(bool isAndroid) async {

@@ -58,7 +58,7 @@ class _AuthenticationRootPageState extends State<AuthenticationRootPage> {
         child: ListView(
           children: <Widget>[
             Container(
-              margin: EdgeInsets.only(top: 75.0, left: 20.0),
+              margin: EdgeInsets.only(top: 50.0, left: 20.0),
               child: Text(
                 "PEDIDOS",
                 style: TextStyle(fontSize: 30.0),
@@ -68,7 +68,7 @@ class _AuthenticationRootPageState extends State<AuthenticationRootPage> {
               child: Column(
                 children: <Widget>[
                   Container(
-                    margin: EdgeInsets.only(top: 150.0),
+                    margin: EdgeInsets.only(top: 100.0),
                     child: Text('Error de conexión al servidor'),
                   ),
                   Container(

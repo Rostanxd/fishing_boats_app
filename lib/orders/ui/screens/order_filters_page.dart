@@ -237,7 +237,8 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Container(
-                  margin: EdgeInsets.only(right: 5.0),
+                  width: 125.0,
+                  margin: EdgeInsets.only(top: 5.0, right: 5.0),
                   child: StreamBuilder(
                       stream: _orderPageBloc.state,
                       builder: (BuildContext context,
@@ -245,7 +246,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                         return RaisedButton(
                           color:
                               snapshot.data == '' ? Colors.grey : Colors.grey,
-                          child: Text('Todo'),
+                          child: Text('Todos'),
                           onPressed: () {
                             _orderPageBloc.changeState('');
                           },
@@ -253,7 +254,8 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                       }),
                 ),
                 Container(
-                  margin: EdgeInsets.only(right: 5.0),
+                  width: 125.0,
+                  margin: EdgeInsets.only(top: 5.0, right: 5.0),
                   child: StreamBuilder(
                       stream: _orderPageBloc.state,
                       builder: (BuildContext context,
@@ -262,14 +264,20 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                           color: snapshot.data == 'P'
                               ? Colors.blueGrey
                               : Colors.grey,
-                          child: Text('Pend.'),
+                          child: Text('Penientes'),
                           onPressed: () {
                             _orderPageBloc.changeState('P');
                           },
                         );
                       }),
                 ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
                 Container(
+                  width: 125.0,
                   margin: EdgeInsets.only(right: 5.0),
                   child: StreamBuilder(
                       stream: _orderPageBloc.state,
@@ -279,7 +287,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                           color: snapshot.data == 'A'
                               ? Colors.blueAccent
                               : Colors.grey,
-                          child: Text('Apro.'),
+                          child: Text('Aprobados'),
                           onPressed: () {
                             _orderPageBloc.changeState('A');
                           },
@@ -287,6 +295,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                       }),
                 ),
                 Container(
+                  width: 125.0,
                   child: StreamBuilder(
                       stream: _orderPageBloc.state,
                       builder: (BuildContext context,
@@ -295,7 +304,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                           color: snapshot.data == 'X'
                               ? Colors.redAccent
                               : Colors.grey,
-                          child: Text('Anul.'),
+                          child: Text('Anulados'),
                           onPressed: () {
                             _orderPageBloc.changeState('X');
                           },

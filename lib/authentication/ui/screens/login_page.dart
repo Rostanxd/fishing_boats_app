@@ -50,7 +50,7 @@ class _LoginPageState extends State<LoginPage> {
         child: ListView(
           children: <Widget>[
             Container(
-              margin: EdgeInsets.only(top: 75.0, left: 20.0),
+              margin: EdgeInsets.only(top: 50.0, left: 20.0),
               child: Text(
                 "PEDIDOS",
                 style: TextStyle(fontSize: 30.0),
@@ -60,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
               child: Container(
                 height: 300.0,
                 width: 300.0,
-                margin: EdgeInsets.only(top: 75.0),
+                margin: EdgeInsets.only(top: 50.0),
                 child: Card(
                   elevation: 5.0,
                   child: Column(
