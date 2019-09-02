@@ -19,6 +19,7 @@ class OrderPage extends StatefulWidget {
 }
 
 class _OrderPageState extends State<OrderPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   OrderPageBloc _orderPageBloc;
 
   @override
@@ -28,6 +29,15 @@ class _OrderPageState extends State<OrderPage> {
     _orderPageBloc.fetchOrders();
     _orderPageBloc.changeUser(widget.authenticationBloc.userLogged.value);
     _orderPageBloc.changeAccess(widget.accessByRole);
+    _orderPageBloc.ordersLength.listen((data) {
+      if (data != null) {
+        _scaffoldKey.currentState.showSnackBar(SnackBar(
+          content: Text('Se encontró ${data.toString()} coincidencia(s).'),
+          duration: Duration(seconds: 3),
+        ));
+        _orderPageBloc.changeOrdersLength(null);
+      }
+    });
     super.initState();
   }
 
@@ -39,6 +49,7 @@ class _OrderPageState extends State<OrderPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Pedidos'),
         backgroundColor: Colors.blueAccent,

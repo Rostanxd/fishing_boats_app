@@ -55,7 +55,7 @@ class OrderApi {
       });
     } else {
       if (response.statusCode == 404) return null;
-      throw Exception('Error obteniendo las ordenes');
+      throw Exception('Error obteniendo las ordenes.');
     }
     return orderList;
   }
@@ -70,7 +70,7 @@ class OrderApi {
     if (response.statusCode == 200) {
       id = json.decode(utf8.decode(response.bodyBytes))['id'];
     } else {
-      throw Exception('Error generando la orden');
+      throw Exception('Error generando la orden.');
     }
     return id;
   }
@@ -82,7 +82,7 @@ class OrderApi {
       body: json.encode({"order_data": "${json.encode(order.toJson())}"}),
     );
     if (response.statusCode != 200) {
-      throw Exception('Error generando la orden');
+      throw Exception('Error generando la orden.');
     }
   }
 }

@@ -18,10 +18,6 @@ class _UserDrawerState extends State<UserDrawer> {
   @override
   void didChangeDependencies() {
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
-
-    /// Fetch the access
-    _authenticationBloc.fetchAccessByRole();
-
     super.didChangeDependencies();
   }
 
@@ -98,7 +94,7 @@ class _UserDrawerState extends State<UserDrawer> {
                 Container(
                   margin: EdgeInsets.only(right: 10.0),
                   child: Text(
-                    'v0.1.0',
+                    'v0.1.1',
                     style: TextStyle(
                         color: Colors.black, fontWeight: FontWeight.bold),
                   ),

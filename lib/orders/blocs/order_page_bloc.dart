@@ -32,6 +32,7 @@ class OrderPageBloc extends Object implements BlocBase {
   final _message = BehaviorSubject<String>();
   final _loading = BehaviorSubject<bool>();
   final _access = BehaviorSubject<AccessByRole>();
+  final _ordersLength = BehaviorSubject<int>();
   final OrdersRepository _ordersRepository = OrdersRepository();
 
   /// Observables
@@ -69,6 +70,8 @@ class OrderPageBloc extends Object implements BlocBase {
   Observable<bool> get loading => _loading.stream;
 
   Observable<AccessByRole> get access => _access.stream;
+
+  Observable<int> get ordersLength => _ordersLength.stream;
 
   /// Functions
   Stream<List<Warehouse>> get warehouses => _warehouseSearch
@@ -119,6 +122,7 @@ class OrderPageBloc extends Object implements BlocBase {
         .timeout(Duration(seconds: 30))
         .then((data) {
       _orders.sink.add(data);
+      _ordersLength.sink.add(data.length);
       _loading.sink.add(false);
     }).catchError((error) {
       _message.sink.add('Error: ${error.toString()}');
@@ -155,6 +159,8 @@ class OrderPageBloc extends Object implements BlocBase {
   Function(String) get changeProvider => _providerName.add;
 
   Function(AccessByRole) get changeAccess => _access.add;
+
+  Function(int) get changeOrdersLength => _ordersLength.add;
 
   void changeId(String id) {
     _id.sink.add(id);
@@ -211,5 +217,6 @@ class OrderPageBloc extends Object implements BlocBase {
     _message.close();
     _loading.close();
     _access.close();
+    _ordersLength.close();
   }
 }

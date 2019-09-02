@@ -95,14 +95,16 @@ class Order extends Object {
 
 class OrderDetail extends Object {
   int sequence;
-  int quantity;
+  double quantity;
   String detail;
 
   OrderDetail(this.sequence, this.quantity, this.detail);
 
   OrderDetail.fromSimpleMap(Map<String, dynamic> json) {
     this.sequence = json['sequence'] != null ? json['sequence'] : 0;
-    this.quantity = json['quantity'] != null ? json['quantity'] : 0;
+    this.quantity = json['quantity'] != null
+        ? double.parse(json['quantity'].toString())
+        : 0.0;
     this.detail = json['detail'] != null ? json['detail'] : '';
   }
 

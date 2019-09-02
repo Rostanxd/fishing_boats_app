@@ -25,6 +25,7 @@ class _AuthenticationRootPageState extends State<AuthenticationRootPage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Fishing boats App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -42,10 +43,52 @@ class _AuthenticationRootPageState extends State<AuthenticationRootPage> {
               );
               break;
             default:
+              if (snapshot.hasError) return _errorPage();
               if (snapshot.hasData && snapshot.data != null) return HomePage();
               return LoginPage();
           }
         },
+      ),
+    );
+  }
+
+  Widget _errorPage() {
+    return Scaffold(
+      body: Container(
+        child: ListView(
+          children: <Widget>[
+            Container(
+              margin: EdgeInsets.only(top: 75.0, left: 20.0),
+              child: Text(
+                "PEDIDOS",
+                style: TextStyle(fontSize: 30.0),
+              ),
+            ),
+            Center(
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    margin: EdgeInsets.only(top: 150.0),
+                    child: Text('Error de conexión al servidor'),
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(top: 20.0),
+                    child: RaisedButton(
+                      child: Text(
+                        'Re-intentar',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () {
+                        _authenticationBloc.fetchDeviceInfo(Platform.isAndroid);
+                      },
+                      color: Colors.blueAccent,
+                    ),
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

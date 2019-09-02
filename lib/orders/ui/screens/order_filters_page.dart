@@ -245,7 +245,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                         return RaisedButton(
                           color:
                               snapshot.data == '' ? Colors.grey : Colors.grey,
-                          child: Text('Todos'),
+                          child: Text('Todo'),
                           onPressed: () {
                             _orderPageBloc.changeState('');
                           },
@@ -262,7 +262,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                           color: snapshot.data == 'P'
                               ? Colors.blueGrey
                               : Colors.grey,
-                          child: Text('Pendientes'),
+                          child: Text('Pend.'),
                           onPressed: () {
                             _orderPageBloc.changeState('P');
                           },
@@ -279,7 +279,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                           color: snapshot.data == 'A'
                               ? Colors.blueAccent
                               : Colors.grey,
-                          child: Text('Aprobado'),
+                          child: Text('Apro.'),
                           onPressed: () {
                             _orderPageBloc.changeState('A');
                           },
@@ -295,7 +295,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                           color: snapshot.data == 'X'
                               ? Colors.redAccent
                               : Colors.grey,
-                          child: Text('Anulados'),
+                          child: Text('Anul.'),
                           onPressed: () {
                             _orderPageBloc.changeState('X');
                           },

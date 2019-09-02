@@ -22,7 +22,7 @@ class OrderDetailBloc extends BlocBase {
   final _dateCreated = BehaviorSubject<DateTime>();
   final _orderDetail = BehaviorSubject<List<OrderDetail>>();
   final _activeForm = BehaviorSubject<bool>();
-  final _detailQuantity = BehaviorSubject<int>();
+  final _detailQuantity = BehaviorSubject<double>();
   final _detailDescription = BehaviorSubject<String>();
   final _warehouses = BehaviorSubject<List<Warehouse>>();
   final _branches = BehaviorSubject<List<Branch>>();
@@ -63,7 +63,7 @@ class OrderDetailBloc extends BlocBase {
 
   Observable<bool> get activeForm => _activeForm.stream;
 
-  Observable<int> get detailQuantity => _detailQuantity.stream;
+  Observable<double> get detailQuantity => _detailQuantity.stream;
 
   Observable<String> get detailDescription => _detailDescription.stream;
 
@@ -134,8 +134,6 @@ class OrderDetailBloc extends BlocBase {
 
   Function(bool) get changeActiveForm => _activeForm.add;
 
-  Function(int) get changeDetailQuantity => _detailQuantity.add;
-
   Function(String) get changeDetailDescription => _detailDescription.add;
 
   Function(String) get changeMessenger => _message.add;
@@ -147,6 +145,12 @@ class OrderDetailBloc extends BlocBase {
   Function(String) get changeTravelSearch => _travelSearch.add;
 
   Function(String) get changeEmployedSearch => _employedSearch.add;
+
+  void changeDetailQuantity(String quantityStr) {
+    if (quantityStr.isNotEmpty)
+      return _detailQuantity.sink.add(double.parse(quantityStr));
+    _detailQuantity.sink.add(0.0);
+  }
 
   void loadStreamData(Order _order) {
     if (_order != null) {
@@ -168,22 +172,20 @@ class OrderDetailBloc extends BlocBase {
     }
   }
 
-  /// ORDER HEADER LOGIC
-
-  /// ORDER DETAIL LOGIC
+  /// LOGIC
   void addRemoveQuantityDetail(bool adding) {
     if (adding) {
-      _detailQuantity.sink.add(_detailQuantity.value + 1);
+      _detailQuantity.sink.add(_detailQuantity.value + 0.10);
     } else {
       if (_detailQuantity.value > 0)
-        _detailQuantity.sink.add(_detailQuantity.value - 1);
+        _detailQuantity.sink.add(_detailQuantity.value - 0.10);
     }
   }
 
   Future<bool> updateDetailLine(int index) async {
     if (_detailDescription.value == '' || _detailQuantity.value == 0) {
       _message.sink.add(
-          'No ha especificado cantidad y el detalle. Verifique por favor.');
+          'No ha especificado cantidad y/o el detalle. Verifique por favor.');
       return false;
     }
 
@@ -221,7 +223,7 @@ class OrderDetailBloc extends BlocBase {
   }
 
   Future<Order> createOrder() async {
-    if (!_validateForm()){
+    if (!_validateForm()) {
       return null;
     }
 
@@ -247,16 +249,15 @@ class OrderDetailBloc extends BlocBase {
       _message.sink.add('Orden generada con éxito.');
       _loading.sink.add(false);
     }, onError: (error) {
-      _message.sink.add('Error: ${error.toString()}');
+      _message.sink.add(error.toString());
       _loading.sink.add(false);
-      return null;
+      _order = null;
     });
-
     return _order;
   }
 
   Future<Order> updatingOrder(String stateToUpd) async {
-    if (!_validateForm()){
+    if (!_validateForm()) {
       return null;
     }
 
@@ -294,41 +295,41 @@ class OrderDetailBloc extends BlocBase {
       _message.sink.add(message);
       _loading.sink.add(false);
     }, onError: (error) {
-      _message.sink.add('Error: ${error.toString()}');
+      _message.sink.add(error.toString());
       _loading.sink.add(false);
-      return null;
+      _order =  null;
     }).timeout(Duration(seconds: 15));
 
     return _order;
   }
 
   bool _validateForm() {
-    if (_warehouseSelected.value == null){
+    if (_warehouseSelected.value == null) {
       _message.sink.add('Error, por favor ingrese la bodega');
       return false;
     }
 
-    if (_branchSelected.value == null){
+    if (_branchSelected.value == null) {
       _message.sink.add('Error, por favor ingrese el barco.');
       return false;
     }
 
-    if (_travelSelected.value == null){
+    if (_travelSelected.value == null) {
       _message.sink.add('Error, por favor ingrese el viaje');
       return false;
     }
 
-    if (_applicantSelected.value == null){
+    if (_applicantSelected.value == null) {
       _message.sink.add('Error, por favor ingrese el solicitante.');
       return false;
     }
 
-    if (_observation.value == null || _observation.value == ''){
+    if (_observation.value == null || _observation.value == '') {
       _message.sink.add('Error, por favor ingrese la observación general.');
       return false;
     }
 
-    if (_orderDetail.value == null || _orderDetail.value.length == 0){
+    if (_orderDetail.value == null || _orderDetail.value.length == 0) {
       _message.sink.add('Error, no ha ingresado el detalle de la orden.');
       return false;
     }

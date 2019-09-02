@@ -18,6 +18,7 @@ class OrderDetailLinePage extends StatefulWidget {
 class _OrderDetailLinePageState extends State<OrderDetailLinePage> {
   OrderDetailBloc _orderDetailBloc;
   OrderDetail _orderDetail;
+  TextEditingController _quantityCtrl = TextEditingController();
   TextEditingController _descriptionCtrl = TextEditingController();
 
   @override
@@ -26,11 +27,12 @@ class _OrderDetailLinePageState extends State<OrderDetailLinePage> {
     this._orderDetail = widget.orderDetail;
 
     if (_orderDetail != null) {
-      _orderDetailBloc.changeDetailQuantity(_orderDetail.quantity);
+      _orderDetailBloc.changeDetailQuantity(_orderDetail.quantity.toString());
       _orderDetailBloc.changeDetailDescription(_orderDetail.detail);
+      _quantityCtrl.text = _orderDetail.quantity.toString();
       _descriptionCtrl.text = _orderDetail.detail;
     } else {
-      _orderDetailBloc.changeDetailQuantity(0);
+      _orderDetailBloc.changeDetailQuantity('0.0');
       _orderDetailBloc.changeDetailDescription('');
       _descriptionCtrl.text = '';
     }
@@ -52,66 +54,27 @@ class _OrderDetailLinePageState extends State<OrderDetailLinePage> {
       ),
       body: ListView(
         children: <Widget>[
+          Container(
+            margin: EdgeInsets.only(top: 10.0, left: 10.0),
+            child: Text('Cantidad'),
+          ),
           StreamBuilder(
               stream: _orderDetailBloc.detailQuantity,
-              builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Container(
-                          margin: EdgeInsets.only(
-                              left: 15.0, bottom: 5.0, top: 10.0),
-                          child: snapshot.data != null
-                              ? Text(snapshot.data.toString())
-                              : Text('0'),
-                        ),
-                        Container(
-                          margin: EdgeInsets.only(left: 15.0, bottom: 10.0),
-                          child: Text('Cantidad'),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              child: IconButton(
-                                onPressed: () {
-                                  _orderDetailBloc
-                                      .addRemoveQuantityDetail(false);
-                                },
-                                icon: Icon(
-                                  Icons.remove,
-                                  color: Colors.red,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(right: 10.0),
-                              child: IconButton(
-                                onPressed: () {
-                                  _orderDetailBloc
-                                      .addRemoveQuantityDetail(true);
-                                },
-                                icon: Icon(
-                                  Icons.add,
-                                  color: Colors.green,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    )
-                  ],
+              builder: (BuildContext context, AsyncSnapshot<double> snapshot) {
+                return Container(
+                  padding: EdgeInsets.only(left: 15.0, right: 10.0),
+                  child: TextField(
+                    minLines: 1,
+                    maxLines: 5,
+                    onChanged: _orderDetailBloc.changeDetailQuantity,
+                    controller: _quantityCtrl,
+                    keyboardType: TextInputType.number,
+                  ),
                 );
               }),
-          Divider(
-            height: 2,
+          Container(
+            margin: EdgeInsets.only(top: 20.0, left: 10.0),
+            child: Text('Detalle'),
           ),
           StreamBuilder(
               stream: _orderDetailBloc.detailDescription,

@@ -56,6 +56,7 @@ class AuthenticationBloc extends Object implements BlocBase {
   }
 
   Future<void> logIn() async {
+    User userValid;
     _logging.sink.add(true);
     await _authenticationRepository
         .logIn(_user.value, _password.value, _deviceId.value)
@@ -64,13 +65,18 @@ class AuthenticationBloc extends Object implements BlocBase {
             return _message.sink.add('Error: Usuario o clave incorrecta.');
           if (user.role == null)
             return _message.sink.add('Usuario sin rol asignado');
-          return _userLogged.sink.add(user);
+
+          userValid = user;
         })
         .timeout(Duration(seconds: 15))
         .catchError((error) {
           _message.sink.add('Error: ${error.toString()}');
           _logging.sink.add(false);
         });
+
+    await _fetchAccessByRole(userValid).then((v) {
+      _userLogged.sink.add(userValid);
+    });
     _logging.sink.add(false);
   }
 
@@ -80,15 +86,14 @@ class AuthenticationBloc extends Object implements BlocBase {
         .then((v) => _userLogged.sink.add(null));
   }
 
-  Future<void> fetchAccessByRole() async {
-    await _authenticationRepository
-        .fetchAccessByRole(_userLogged.value.role)
-        .then((access) {
+  Future<void> _fetchAccessByRole(User user) async {
+    await _authenticationRepository.fetchAccessByRole(user.role).then((access) {
       _accessByRole.sink.add(access);
     });
   }
 
   Future<void> fetchDeviceInfo(bool isAndroid) async {
+    User userValid;
     if (isAndroid) {
       await _deviceInfoPlugin.androidInfo.then((info) {
         _androidDeviceInfo.sink.add(info);
@@ -104,7 +109,15 @@ class AuthenticationBloc extends Object implements BlocBase {
     await _authenticationRepository
         .authenticatedUser(_deviceId.value)
         .then((value) {
-      _userLogged.sink.add(value);
+          userValid = value;
+        })
+        .timeout(Duration(seconds: 15))
+        .catchError((error) {
+          _userLogged.addError(error);
+        });
+
+    await _fetchAccessByRole(userValid).then((v) {
+      _userLogged.sink.add(userValid);
     });
   }
 
