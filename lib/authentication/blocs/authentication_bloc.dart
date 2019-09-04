@@ -15,6 +15,7 @@ class AuthenticationBloc extends Object implements BlocBase {
   final _accessByRole = BehaviorSubject<List<AccessByRole>>();
   final _androidDeviceInfo = BehaviorSubject<AndroidDeviceInfo>();
   final _iosDeviceInfo = BehaviorSubject<IosDeviceInfo>();
+  final _currentProgram = BehaviorSubject<String>();
   final AuthenticationRepository _authenticationRepository =
       AuthenticationRepository();
   final DeviceInfoPlugin _deviceInfoPlugin = DeviceInfoPlugin();
@@ -28,7 +29,7 @@ class AuthenticationBloc extends Object implements BlocBase {
 
   ValueObservable<User> get userLogged => _userLogged.stream;
 
-  Observable<List<AccessByRole>> get accessByRole => _accessByRole.stream;
+  ValueObservable<List<AccessByRole>> get accessByRole => _accessByRole.stream;
 
   Observable<String> get messenger => _message.stream;
 
@@ -40,10 +41,12 @@ class AuthenticationBloc extends Object implements BlocBase {
         return false;
       });
 
-  /// Functions
-  Function(String) get changeMessage => _message.add;
+  ValueObservable<String> get currentProgram => _currentProgram.stream;
 
+  /// Functions
   Function(String) get changeDeviceId => _deviceId.add;
+
+  Function(String) get changeCurrentProgram => _currentProgram.add;
 
   void changeUser(value) {
     if (value == '') return _user.sink.add(null);
@@ -55,6 +58,13 @@ class AuthenticationBloc extends Object implements BlocBase {
     _password.sink.add(value);
   }
 
+  void changeMessage(String message) {
+    _message.sink.add(message);
+    Future.delayed(Duration(seconds: 1)).then((v) {
+      _message.sink.add(null);
+    });
+  }
+
   Future<void> logIn() async {
     User userValid;
     _logging.sink.add(true);
@@ -62,15 +72,14 @@ class AuthenticationBloc extends Object implements BlocBase {
         .logIn(_user.value, _password.value, _deviceId.value)
         .then((user) {
           if (user == null)
-            return _message.sink.add('Error: Usuario o clave incorrecta.');
+            return changeMessage('Error: Usuario o clave incorrecta.');
           if (user.role == null)
-            return _message.sink.add('Usuario sin rol asignado');
-
+            return changeMessage('Usuario sin rol asignado');
           userValid = user;
         })
         .timeout(Duration(seconds: 15))
         .catchError((error) {
-          _message.sink.add('Error: ${error.toString()}');
+          changeMessage(error.toString());
           _logging.sink.add(false);
         });
 
@@ -135,5 +144,6 @@ class AuthenticationBloc extends Object implements BlocBase {
     _deviceId.close();
     _androidDeviceInfo.close();
     _iosDeviceInfo.close();
+    _currentProgram.close();
   }
 }

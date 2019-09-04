@@ -7,6 +7,7 @@ import 'package:fishing_boats_app/orders/models/employed.dart';
 import 'package:fishing_boats_app/orders/models/order.dart';
 import 'package:fishing_boats_app/orders/models/warehouse.dart';
 import 'package:fishing_boats_app/orders/ui/screens/order_detail_line_page.dart';
+import 'package:fishing_boats_app/utils/conversion_data_type.dart';
 import 'package:fishing_boats_app/widgets/custom_circular_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -194,7 +195,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 stateName = 'Pendiente';
                 break;
               case 'A':
-                stateName = 'Aprovado';
+                stateName = 'Aprobado';
                 break;
               case 'X':
                 stateName = 'Anulado';
@@ -270,7 +271,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                                         null &&
                                     detailSnapshot.data[index].quantity != 0
                                 ? Text(
-                                    'Cantidad ${detailSnapshot.data[index].quantity.toString()}')
+                                    'Cantidad ${ConversionDataType.doubleQuantityToString(detailSnapshot.data[index].quantity)}')
                                 : Text('N/A'),
                           );
                         },
@@ -466,7 +467,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                                           null &&
                                       detailSnapshot.data[index].quantity != 0
                                   ? Text(
-                                      'Cantidad ${detailSnapshot.data[index].quantity.toString()}')
+                                      'Cantidad ${ConversionDataType.doubleQuantityToString(detailSnapshot.data[index].quantity)}')
                                   : Text('N/A'),
                               trailing: Icon(Icons.more_vert),
                               onTap: () {

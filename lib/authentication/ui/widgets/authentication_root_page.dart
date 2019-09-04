@@ -1,9 +1,12 @@
 import 'dart:io';
 
 import 'package:fishing_boats_app/authentication/blocs/authentication_bloc.dart';
+import 'package:fishing_boats_app/authentication/models/role.dart';
 import 'package:fishing_boats_app/authentication/models/user.dart';
 import 'package:fishing_boats_app/authentication/ui/screens/login_page.dart';
 import 'package:fishing_boats_app/home_page.dart';
+import 'package:fishing_boats_app/orders/ui/screens/order_page.dart';
+import 'package:fishing_boats_app/router.dart';
 import 'package:fishing_boats_app/widgets/bloc_provider.dart';
 import 'package:flutter/material.dart';
 
@@ -19,36 +22,59 @@ class _AuthenticationRootPageState extends State<AuthenticationRootPage> {
   void didChangeDependencies() {
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
     _authenticationBloc.fetchDeviceInfo(Platform.isAndroid);
+    _authenticationBloc.changeCurrentProgram('000');
     super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: _authenticationBloc.userLogged,
+      builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return _materialApp(Container(
+              color: Colors.white,
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ));
+            break;
+          default:
+            if (snapshot.hasError) return _materialApp(_errorPage());
+            if (snapshot.hasData && snapshot.data != null)
+              return StreamBuilder(
+                stream: _authenticationBloc.accessByRole,
+                builder: (BuildContext context,
+                    AsyncSnapshot<List<AccessByRole>> snapshot) {
+                  if (snapshot.hasData &&
+                      snapshot.data[0].program.code == '001' &&
+                      snapshot.data[0].execute == '1') {
+                    return _materialApp(OrderPage(
+                      authenticationBloc: _authenticationBloc,
+                      accessByRole: snapshot.data[0],
+                    ));
+                  }
+                  return _materialApp(HomePage(
+                    authenticationBloc: _authenticationBloc,
+                  ));
+                },
+              );
+            return _materialApp(LoginPage());
+        }
+      },
+    );
+  }
+
+  MaterialApp _materialApp(Widget widget) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Fishing boats App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: StreamBuilder(
-        stream: _authenticationBloc.userLogged,
-        builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.waiting:
-              return Container(
-                color: Colors.white,
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-              break;
-            default:
-              if (snapshot.hasError) return _errorPage();
-              if (snapshot.hasData && snapshot.data != null) return HomePage();
-              return LoginPage();
-          }
-        },
-      ),
+      onGenerateRoute: Router.generateRoute,
+      home: widget,
     );
   }
 

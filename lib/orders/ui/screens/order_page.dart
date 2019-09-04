@@ -1,5 +1,6 @@
 import 'package:fishing_boats_app/authentication/blocs/authentication_bloc.dart';
 import 'package:fishing_boats_app/authentication/models/role.dart';
+import 'package:fishing_boats_app/authentication/ui/widgets/user_drawer.dart';
 import 'package:fishing_boats_app/orders/blocs/order_page_bloc.dart';
 import 'package:fishing_boats_app/orders/models/order.dart';
 import 'package:fishing_boats_app/orders/ui/screens/order_detail_page.dart';
@@ -24,6 +25,10 @@ class _OrderPageState extends State<OrderPage> {
 
   @override
   void initState() {
+    /// Add to the stream the current program
+    widget.authenticationBloc
+        .changeCurrentProgram(widget.accessByRole.program.code);
+
     _orderPageBloc = OrderPageBloc();
     _orderPageBloc.cleanFilters();
     _orderPageBloc.fetchOrders();
@@ -50,6 +55,7 @@ class _OrderPageState extends State<OrderPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
+      drawer: UserDrawer(),
       appBar: AppBar(
         title: Text('Pedidos'),
         backgroundColor: Colors.blueAccent,

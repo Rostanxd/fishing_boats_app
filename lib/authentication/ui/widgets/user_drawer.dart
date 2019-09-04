@@ -1,7 +1,7 @@
 import 'package:fishing_boats_app/authentication/blocs/authentication_bloc.dart';
 import 'package:fishing_boats_app/authentication/models/role.dart';
 import 'package:fishing_boats_app/authentication/models/user.dart';
-import 'package:fishing_boats_app/orders/ui/screens/order_page.dart';
+import 'package:fishing_boats_app/router.dart';
 import 'package:fishing_boats_app/widgets/bloc_provider.dart';
 import 'package:flutter/material.dart';
 
@@ -25,56 +25,230 @@ class _UserDrawerState extends State<UserDrawer> {
   Widget build(BuildContext context) {
     _user = _authenticationBloc.userLogged.value;
 
+    return StreamBuilder(
+      stream: _authenticationBloc.accessByRole,
+      builder:
+          (BuildContext context, AsyncSnapshot<List<AccessByRole>> snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return _loadingDrawer();
+            break;
+          default:
+            if (snapshot.hasError)
+              return _messageDrawer(snapshot.error.toString());
+
+            if (!snapshot.hasData)
+              return _messageDrawer('No tiene accesos configurados');
+
+            return _accessDrawer(snapshot.data);
+        }
+      },
+    );
+  }
+
+  Drawer _accessDrawer(List<AccessByRole> accessList) {
+    List<Widget> children = List<Widget>();
+    children.add(_header());
+    children.add(StreamBuilder(
+        stream: _authenticationBloc.currentProgram,
+        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+          return snapshot.hasData && snapshot.data == '000'
+              ? ListTile(
+                  title: Text('Home', style: TextStyle(color: Colors.grey)),
+                  leading: Icon(Icons.home),
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                )
+              : ListTile(
+                  title: Text('Home'),
+                  leading: Icon(Icons.home),
+                  onTap: () {
+                    ScreenArguments args =
+                        ScreenArguments(_authenticationBloc, null);
+                    Navigator.pop(context);
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                        '/home', (Route<dynamic> route) => false,
+                        arguments: args);
+                  },
+                );
+        }));
+
+    /// Adding the program with the access
+    accessList.forEach((access) {
+      children.add(StreamBuilder(
+          stream: _authenticationBloc.currentProgram,
+          builder: (BuildContext context, AsyncSnapshot<String> snapPrg) {
+            if (snapPrg.hasData && snapPrg.data == access.program.code.trim())
+              return ListTile(
+                title: Text(
+                  '${access.program.name}',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                leading: Icon(
+                    IconData(access.program.icon, fontFamily: 'MaterialIcons')),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              );
+            if (access.execute != '1')
+              return ListTile(
+                title: Text(
+                  '${access.program.name}',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                leading: Icon(
+                    IconData(access.program.icon, fontFamily: 'MaterialIcons')),
+                onTap: () {
+                  Navigator.pop(context);
+                  _authenticationBloc.changeMessage(
+                      'Lo sentimos no tiene accesos a esta opción.');
+                },
+              );
+            return ListTile(
+              title: Text('${access.program.name}'),
+              leading: Icon(
+                  IconData(access.program.icon, fontFamily: 'MaterialIcons')),
+              onTap: () {
+                ScreenArguments args =
+                    ScreenArguments(_authenticationBloc, access);
+                Navigator.pop(context);
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                    access.program.path.trim(), (Route<dynamic> route) => false,
+                    arguments: args);
+              },
+            );
+          }));
+    });
+
+    children.add(Divider());
+    children.add(ListTile(
+      title: Text('Salir'),
+      leading: Icon(Icons.exit_to_app),
+      onTap: () {
+        /// Hidden the user drawer
+        Navigator.pop(context);
+
+        /// Calling the function to sign out
+        _authenticationBloc.logOut();
+      },
+    ));
+    children.add(Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: <Widget>[
+        Container(
+          margin: EdgeInsets.only(right: 10.0),
+          child: Text(
+            'v0.1.1',
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          ),
+        )
+      ],
+    ));
+
+    return Drawer(elevation: 5.0, child: ListView(children: children));
+  }
+
+  Drawer _messageDrawer(String message) {
     return Drawer(
         elevation: 5.0,
         child: ListView(
           children: <Widget>[
             _header(),
-            ListTile(
-              title: Text('Home'),
-              leading: Icon(Icons.home),
-              onTap: () {
-                Navigator.pop(context);
-              },
+            StreamBuilder(
+                stream: _authenticationBloc.currentProgram,
+                builder:
+                    (BuildContext context, AsyncSnapshot<String> snapshot) {
+                  return snapshot.hasData && snapshot.data == '000'
+                      ? ListTile(
+                          title: Text('Home',
+                              style: TextStyle(color: Colors.grey)),
+                          leading: Icon(Icons.home),
+                          onTap: () {
+                            Navigator.pop(context);
+                          },
+                        )
+                      : ListTile(
+                          title: Text('Home'),
+                          leading: Icon(Icons.home),
+                          onTap: () {
+                            ScreenArguments args =
+                                ScreenArguments(_authenticationBloc, null);
+                            Navigator.pop(context);
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                                '/home', (Route<dynamic> route) => false,
+                                arguments: args);
+                          },
+                        );
+                }),
+            Container(
+              margin: EdgeInsets.only(left: 20.0),
+              child: Text(message),
             ),
             Divider(),
-            StreamBuilder(
-              stream: _authenticationBloc.accessByRole,
-              builder: (BuildContext context,
-                  AsyncSnapshot<List<AccessByRole>> snapshot) {
-                switch (snapshot.connectionState) {
-                  case ConnectionState.waiting:
-                    return Container(
-                      margin: EdgeInsets.only(left: 20.0),
-                      child: LinearProgressIndicator(),
-                    );
-                    break;
-                  default:
-                    if (snapshot.hasData &&
-                        snapshot.data[0].program.code == '001' &&
-                        snapshot.data[0].execute == '1') {
-                      return ListTile(
-                        title: Text('Pedidos'),
-                        leading: Icon(Icons.receipt),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => OrderPage(
-                                        authenticationBloc: _authenticationBloc,
-                                        accessByRole: snapshot.data[0],
-                                      )));
-                        },
-                      );
-                    }
-                    return Container(
-                      margin:
-                          EdgeInsets.only(left: 20.0, top: 10.0, bottom: 10.0),
-                      child: Text('Usuario sin accesos.'),
-                    );
-                }
+            ListTile(
+              title: Text('Salir'),
+              leading: Icon(Icons.exit_to_app),
+              onTap: () {
+                /// Hidden the user drawer
+                Navigator.pop(context);
+
+                /// Calling the function to sign out
+                _authenticationBloc.logOut();
               },
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.only(right: 10.0),
+                  child: Text(
+                    'v0.1.1',
+                    style: TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold),
+                  ),
+                )
+              ],
+            )
+          ],
+        ));
+  }
+
+  Drawer _loadingDrawer() {
+    return Drawer(
+        elevation: 5.0,
+        child: ListView(
+          children: <Widget>[
+            _header(),
+            StreamBuilder(
+                stream: _authenticationBloc.currentProgram,
+                builder:
+                    (BuildContext context, AsyncSnapshot<String> snapshot) {
+                  return snapshot.hasData && snapshot.data == '000'
+                      ? ListTile(
+                          title: Text('Home',
+                              style: TextStyle(color: Colors.grey)),
+                          leading: Icon(Icons.home),
+                          onTap: () {
+                            Navigator.pop(context);
+                          },
+                        )
+                      : ListTile(
+                          title: Text('Home'),
+                          leading: Icon(Icons.home),
+                          onTap: () {
+                            ScreenArguments args =
+                                ScreenArguments(_authenticationBloc, null);
+                            Navigator.pop(context);
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                                '/home', (Route<dynamic> route) => false,
+                                arguments: args);
+                          },
+                        );
+                }),
+            Container(
+              margin: EdgeInsets.only(left: 20.0),
+              child: LinearProgressIndicator(),
             ),
             Divider(),
             ListTile(

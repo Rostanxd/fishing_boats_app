@@ -15,6 +15,7 @@ class AuthenticationFishBackEnd {
           json.decode(utf8.decode(response.bodyBytes)));
     } else {
       if (response.statusCode == 404) return null;
+      if (response.statusCode == 500) return null;
       throw Exception('Failed to login. Status: ${response.statusCode}');
     }
   }
