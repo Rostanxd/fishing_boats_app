@@ -79,6 +79,12 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
         backgroundColor: Colors.blueAccent,
         actions: <Widget>[
           IconButton(
+            icon: Icon(Icons.keyboard_hide),
+            onPressed: () {
+              FocusScope.of(context).requestFocus(FocusNode());
+            },
+          ),
+          IconButton(
               icon: Icon(Icons.restore_from_trash),
               onPressed: () {
                 _orderPageBloc.cleanFilters();
@@ -285,7 +291,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                           AsyncSnapshot<String> snapshot) {
                         return RaisedButton(
                           color: snapshot.data == 'A'
-                              ? Colors.blueAccent
+                              ? Colors.green
                               : Colors.grey,
                           child: Text('Aprobados'),
                           onPressed: () {

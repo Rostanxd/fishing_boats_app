@@ -51,6 +51,14 @@ class _OrderDetailLinePageState extends State<OrderDetailLinePage> {
       appBar: AppBar(
         title: Text('Detalle pedido'),
         backgroundColor: Colors.grey,
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.keyboard_hide),
+            onPressed: (){
+              FocusScope.of(context).requestFocus(FocusNode());
+            },
+          )
+        ],
       ),
       body: ListView(
         children: <Widget>[

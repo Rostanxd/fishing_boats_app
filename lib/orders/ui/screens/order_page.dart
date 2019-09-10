@@ -190,6 +190,6 @@ _evaluateOrder(String state) {
 
 _evaluateOrderColor(String state) {
   if (state == 'P') return Colors.transparent;
-  if (state == 'A') return Colors.blueAccent;
+  if (state == 'A') return Colors.green;
   if (state == 'X') return Colors.redAccent;
 }

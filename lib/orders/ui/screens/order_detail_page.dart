@@ -84,6 +84,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     : Text('Nuevo pedido');
               },
             ),
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(Icons.keyboard_hide),
+                onPressed: (){
+                  FocusScope.of(context).requestFocus(FocusNode());
+                },
+              )
+            ],
             backgroundColor: _evaluateOrderColor(snapshot.data),
             bottom: PreferredSize(
               preferredSize: Size(double.infinity, 1.0),
@@ -520,7 +528,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   _evaluateOrderColor(String state) {
     if (state == 'P') return Colors.transparent;
-    if (state == 'A') return Colors.blueAccent;
+    if (state == 'A') return Colors.greenAccent;
     if (state == 'X') return Colors.redAccent;
   }
 
@@ -535,7 +543,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               builder: (context, snapshot) {
                 return snapshot.hasData && snapshot.data.register == '1'
                     ? RaisedButton(
-                        color: Colors.green,
+                        color: Colors.blueAccent,
                         child: Text(
                           'Guardar',
                           style: TextStyle(color: Colors.white),
@@ -609,7 +617,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           AsyncSnapshot<AccessByRole> snapshot) {
                         return snapshot.hasData && snapshot.data.process == '1'
                             ? RaisedButton(
-                                color: Colors.blueAccent,
+                                color: Colors.green,
                                 child: Text(
                                   'Procesar',
                                   style: TextStyle(color: Colors.white),
@@ -646,7 +654,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           AsyncSnapshot<AccessByRole> snapshot) {
                         return snapshot.hasData && snapshot.data.register == '1'
                             ? RaisedButton(
-                                color: Colors.green,
+                                color: Colors.blueAccent,
                                 child: Text(
                                   'Guardar',
                                   style: TextStyle(color: Colors.white),
@@ -679,7 +687,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           AsyncSnapshot<AccessByRole> snapshot) {
                         return snapshot.hasData && snapshot.data.edit == '1'
                             ? RaisedButton(
-                                color: Colors.green,
+                                color: Colors.blueAccent,
                                 child: Text(
                                   'Editar',
                                   style: TextStyle(color: Colors.white),
@@ -743,7 +751,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               builder: (context, snapshot) {
                 return snapshot.hasData && snapshot.data.process == '1'
                     ? RaisedButton(
-                        color: Colors.blueAccent,
+                        color: Colors.green,
                         child: Text(
                           'Procesar',
                           style: TextStyle(color: Colors.white),
