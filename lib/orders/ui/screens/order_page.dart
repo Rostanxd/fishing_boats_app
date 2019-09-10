@@ -112,71 +112,82 @@ class _OrderPageState extends State<OrderPage> {
                   );
           }),
       body: Container(
-        child: StreamBuilder(
-          stream: _orderPageBloc.orders,
-          builder: (BuildContext context, AsyncSnapshot<List<Order>> snapshot) {
-            if (snapshot.hasError)
-              return Container(
-                child: Text('Error: ${snapshot.error.toString()}'),
-              );
+        child: RefreshIndicator(
+          onRefresh: _orderPageBloc.fetchOrders,
+          child: StreamBuilder(
+            stream: _orderPageBloc.orders,
+            builder: (BuildContext context, AsyncSnapshot<List<Order>> snapshot) {
+              if (snapshot.hasError)
+                return Container(
+                  child: Text('Error: ${snapshot.error.toString()}'),
+                );
 
-            if (!snapshot.hasData ||
-                snapshot.data == null ||
-                snapshot.data.length == 0)
-              return Center(
-                child: Container(
-                  child: Text('No hay resultados de la búsqueda.'),
-                ),
-              );
+              if (!snapshot.hasData ||
+                  snapshot.data == null ||
+                  snapshot.data.length == 0)
+                return Center(
+                  child: Container(
+                    child: Text('No hay resultados de la búsqueda.'),
+                  ),
+                );
 
-            return ListView.separated(
-                itemBuilder: (BuildContext context, int index) {
-                  return Container(
-                    color: _evaluateOrderColor(snapshot.data[index].state),
-                    child: ListTile(
-                      leading: _evaluateOrder(snapshot.data[index].state),
-                      title: Text('No. ${snapshot.data[index].id.toString()} - '
-                          '${snapshot.data[index].branch.name}'),
-                      subtitle: snapshot.data[index].observation.length > 35
-                          ? Text(
-                              '${snapshot.data[index].observation.substring(0, 30)}...')
-                          : Text('${snapshot.data[index].observation}'),
-                      trailing: Icon(Icons.navigate_next),
-                      onTap: () {
-                        Navigator.push(
-                            (context),
-                            MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    OrderDetailPage(
-                                      authenticationBloc:
-                                          widget.authenticationBloc,
-                                      orderPageBloc: _orderPageBloc,
-                                      order: snapshot.data[index],
-                                    )));
-                      },
-                    ),
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  return Divider(
-                    height: 2.0,
-                  );
-                },
-                itemCount: snapshot.data.length);
-          },
+              return ListView.separated(
+                  itemBuilder: (BuildContext context, int index) {
+                    return Container(
+                      color: _evaluateOrderColor(snapshot.data[index].state),
+                      child: ListTile(
+                        leading: _evaluateOrder(snapshot.data[index].state),
+                        title: Text('No. ${snapshot.data[index].id.toString()} - '
+                            '${snapshot.data[index].branch.name}'),
+                        subtitle: snapshot.data[index].observation.length > 35
+                            ? Text(
+                                '${snapshot.data[index].observation.substring(0, 30)}...')
+                            : Text('${snapshot.data[index].observation}'),
+                        trailing: Icon(Icons.navigate_next),
+                        onTap: () {
+                          Navigator.push(
+                              (context),
+                              MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      OrderDetailPage(
+                                        authenticationBloc:
+                                            widget.authenticationBloc,
+                                        orderPageBloc: _orderPageBloc,
+                                        order: snapshot.data[index],
+                                      )));
+                        },
+                      ),
+                    );
+                  },
+                  separatorBuilder: (BuildContext context, int index) {
+                    return Divider(
+                      height: 2.0,
+                    );
+                  },
+                  itemCount: snapshot.data.length);
+            },
+          ),
         ),
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _orderPageBloc.dispose();
+    super.dispose();
+  }
+
+
 }
 
 _evaluateOrder(String state) {
-  if (state == 'P')
+  if (state == 'A')
     return Icon(
       Icons.receipt,
       color: Colors.black,
     );
-  if (state == 'A')
+  if (state == 'P')
     return Icon(
       Icons.receipt,
       color: Colors.white,
@@ -189,7 +200,7 @@ _evaluateOrder(String state) {
 }
 
 _evaluateOrderColor(String state) {
-  if (state == 'P') return Colors.transparent;
-  if (state == 'A') return Colors.green;
+  if (state == 'A') return Colors.transparent;
+  if (state == 'P') return Colors.green;
   if (state == 'X') return Colors.redAccent;
 }

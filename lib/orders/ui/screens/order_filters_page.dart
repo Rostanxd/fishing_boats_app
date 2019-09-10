@@ -250,8 +250,9 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                       builder: (BuildContext context,
                           AsyncSnapshot<String> snapshot) {
                         return RaisedButton(
-                          color:
-                              snapshot.data == '' ? Colors.grey : Colors.grey,
+                          color: snapshot.data == ''
+                              ? Colors.blueAccent
+                              : Colors.grey,
                           child: Text('Todos'),
                           onPressed: () {
                             _orderPageBloc.changeState('');
@@ -267,12 +268,12 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                       builder: (BuildContext context,
                           AsyncSnapshot<String> snapshot) {
                         return RaisedButton(
-                          color: snapshot.data == 'P'
+                          color: snapshot.data == 'A'
                               ? Colors.blueGrey
                               : Colors.grey,
                           child: Text('Penientes'),
                           onPressed: () {
-                            _orderPageBloc.changeState('P');
+                            _orderPageBloc.changeState('A');
                           },
                         );
                       }),
@@ -290,12 +291,11 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                       builder: (BuildContext context,
                           AsyncSnapshot<String> snapshot) {
                         return RaisedButton(
-                          color: snapshot.data == 'A'
-                              ? Colors.green
-                              : Colors.grey,
+                          color:
+                              snapshot.data == 'P' ? Colors.green : Colors.grey,
                           child: Text('Aprobados'),
                           onPressed: () {
-                            _orderPageBloc.changeState('A');
+                            _orderPageBloc.changeState('P');
                           },
                         );
                       }),

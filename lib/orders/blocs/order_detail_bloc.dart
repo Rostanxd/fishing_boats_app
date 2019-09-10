@@ -9,6 +9,7 @@ import 'package:rxdart/rxdart.dart';
 
 class OrderDetailBloc extends BlocBase {
   final _user = BehaviorSubject<User>();
+  final _order = BehaviorSubject<Order>();
   final _id = BehaviorSubject<int>();
   final _date = BehaviorSubject<DateTime>();
   final _warehouseSelected = BehaviorSubject<Warehouse>();
@@ -17,6 +18,7 @@ class OrderDetailBloc extends BlocBase {
   final _travelSelected = BehaviorSubject<Warehouse>();
   final _state = BehaviorSubject<String>();
   final _observation = BehaviorSubject<String>();
+  final _commentary = BehaviorSubject<String>();
   final _providerName = BehaviorSubject<String>();
   final _userCreated = BehaviorSubject<String>();
   final _dateCreated = BehaviorSubject<DateTime>();
@@ -37,6 +39,8 @@ class OrderDetailBloc extends BlocBase {
 
   ValueObservable<User> get userLogged => _user.stream;
 
+  Observable<Order> get order => _order.stream;
+
   Observable<int> get id => _id.stream;
 
   ValueObservable<DateTime> get date => _date.stream;
@@ -52,6 +56,8 @@ class OrderDetailBloc extends BlocBase {
   Observable<String> get state => _state.stream;
 
   Observable<String> get observation => _observation.stream;
+
+  Observable<String> get commentary => _commentary.stream;
 
   Observable<String> get providerName => _providerName.stream;
 
@@ -126,6 +132,8 @@ class OrderDetailBloc extends BlocBase {
 
   Function(String) get changeObservation => _observation.add;
 
+  Function(String) get changeCommentary => _commentary.add;
+
   Function(String) get changeProviderName => _providerName.add;
 
   Function(String) get changeUserCreated => _userCreated.add;
@@ -152,20 +160,22 @@ class OrderDetailBloc extends BlocBase {
     _detailQuantity.sink.add(0.0);
   }
 
-  void loadStreamData(Order _order) {
-    if (_order != null) {
-      _id.sink.add(_order.id);
-      _date.sink.add(_order.date);
-      _warehouseSelected.sink.add(_order.warehouse);
-      _branchSelected.sink.add(_order.branch);
-      _travelSelected.sink.add(_order.travel);
-      _applicantSelected.sink.add(_order.applicant);
-      _state.sink.add(_order.state);
-      _observation.sink.add(_order.observation);
-      _providerName.sink.add(_order.providerName);
-      _orderDetail.sink.add(_order.detail);
+  void loadStreamData(Order order) {
+    if (order != null) {
+      _order.sink.add(order);
+      _id.sink.add(order.id);
+      _date.sink.add(order.date);
+      _warehouseSelected.sink.add(order.warehouse);
+      _branchSelected.sink.add(order.branch);
+      _travelSelected.sink.add(order.travel);
+      _applicantSelected.sink.add(order.applicant);
+      _state.sink.add(order.state);
+      _observation.sink.add(order.observation);
+      _providerName.sink.add(order.providerName);
+      _orderDetail.sink.add(order.detail);
       _activeForm.sink.add(false);
     } else {
+      _order.sink.add(null);
       _state.sink.add('');
       _date.sink.add(DateTime.now());
       _activeForm.sink.add(true);
@@ -228,11 +238,12 @@ class OrderDetailBloc extends BlocBase {
     }
 
     _loading.sink.add(true);
-    Order _order = Order(
+    Order order = Order(
         0,
         _date.value,
-        'P',
+        'A',
         _observation.value,
+        '',
         _warehouseSelected.value,
         _branchSelected.value,
         _applicantSelected.value,
@@ -242,18 +253,19 @@ class OrderDetailBloc extends BlocBase {
         DateTime.now(),
         null,
         _orderDetail.value);
-    await _ordersRepository.createOrder(_order).then((value) {
-      _order.id = value;
+    await _ordersRepository.createOrder(order).then((value) {
+      order.id = value;
+      _order.sink.add(order);
       _id.sink.add(value);
-      _state.sink.add('P');
+      _state.sink.add('A');
       _message.sink.add('Orden generada con éxito.');
       _loading.sink.add(false);
     }, onError: (error) {
       _message.sink.add(error.toString());
       _loading.sink.add(false);
-      _order = null;
+      order = null;
     });
-    return _order;
+    return order;
   }
 
   Future<Order> updatingOrder(String stateToUpd) async {
@@ -264,11 +276,12 @@ class OrderDetailBloc extends BlocBase {
     String message;
     _loading.sink.add(true);
 
-    Order _order = Order(
+    Order order = Order(
         _id.value,
         _date.value,
         stateToUpd,
         _observation.value,
+        _commentary.value,
         _warehouseSelected.value,
         _branchSelected.value,
         _applicantSelected.value,
@@ -276,31 +289,32 @@ class OrderDetailBloc extends BlocBase {
         '',
         _user.value.user,
         DateTime.now(),
-        stateToUpd == 'A' ? DateTime.now() : null,
+        stateToUpd == 'P' ? DateTime.now() : null,
         _orderDetail.value);
 
-    await _ordersRepository.updateOrder(_order).then((value) {
+    await _ordersRepository.updateOrder(order).then((value) {
       switch (stateToUpd) {
-        case "P":
+        case "A":
           message = 'Orden actualizada con éxito';
           break;
-        case "A":
+        case "P":
           message = 'Orden procesada con éxito';
           break;
         case "X":
           message = 'Orden anulada con éxito';
           break;
       }
+      _order.sink.add(order);
       _state.sink.add(stateToUpd);
       _message.sink.add(message);
       _loading.sink.add(false);
     }, onError: (error) {
       _message.sink.add(error.toString());
       _loading.sink.add(false);
-      _order =  null;
+      order =  null;
     }).timeout(Duration(seconds: 15));
 
-    return _order;
+    return order;
   }
 
   bool _validateForm() {
@@ -340,6 +354,7 @@ class OrderDetailBloc extends BlocBase {
   @override
   void dispose() {
     _user.close();
+    _order.close();
     _id.close();
     _date.close();
     _warehouseSelected.close();
@@ -348,6 +363,7 @@ class OrderDetailBloc extends BlocBase {
     _travelSelected.close();
     _state.close();
     _observation.close();
+    _commentary.close();
     _providerName.close();
     _userCreated.close();
     _dateCreated.close();

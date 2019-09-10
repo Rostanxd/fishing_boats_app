@@ -8,6 +8,7 @@ class Order extends Object {
   DateTime date;
   String state;
   String observation;
+  String commentary;
   Warehouse warehouse;
   Branch branch;
   Employed applicant;
@@ -23,6 +24,7 @@ class Order extends Object {
       this.date,
       this.state,
       this.observation,
+      this.commentary,
       this.warehouse,
       this.branch,
       this.applicant,
@@ -40,6 +42,8 @@ class Order extends Object {
     this.date = DateTime.parse(jsonData['date']);
     this.state = jsonData['state'];
     this.observation = jsonData['observation'];
+    this.commentary =
+        jsonData['commentary'] != null ? jsonData['commentary'] : '';
     this.warehouse = Warehouse.fromSimpleMap(
         {'code': jsonData['warehouse_id'], 'name': jsonData['warehouse_name']});
     this.branch = Branch.fromSimpleMap(
@@ -71,6 +75,7 @@ class Order extends Object {
         'id': this.id,
         'date': this.date.toString(),
         'observation': this.observation,
+        'commentary': this.commentary,
         'state': this.state,
         'warehouse': this.warehouse.toJson(),
         'branch': this.branch.toJson(),
@@ -87,7 +92,7 @@ class Order extends Object {
   @override
   String toString() {
     return 'Order{id: $id, date: $date, state: $state, '
-        'observation: $observation, warehouse: $warehouse, '
+        'observation: $observation, commentary: $commentary, warehouse: $warehouse, '
         'branch: $branch, applicant: $applicant, travel: $travel, '
         'providerName: $providerName, detail: $detail}';
   }

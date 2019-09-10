@@ -72,52 +72,66 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: _orderDetailBloc.state,
-      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-        return Scaffold(
-          appBar: AppBar(
-            title: StreamBuilder(
-              stream: _orderDetailBloc.id,
-              builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                return snapshot.hasData
-                    ? Text('Pedido #${snapshot.data.toString()}')
-                    : Text('Nuevo pedido');
-              },
-            ),
-            actions: <Widget>[
-              IconButton(
-                icon: Icon(Icons.keyboard_hide),
-                onPressed: (){
-                  FocusScope.of(context).requestFocus(FocusNode());
-                },
-              )
-            ],
-            backgroundColor: _evaluateOrderColor(snapshot.data),
-            bottom: PreferredSize(
-              preferredSize: Size(double.infinity, 1.0),
-              child: StreamBuilder(
-                  stream: _orderDetailBloc.loading,
+      stream: _orderDetailBloc.order,
+      builder: (BuildContext context, AsyncSnapshot<Order> snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return Scaffold(
+              body: CircularProgressIndicator(),
+            );
+          default:
+            return Scaffold(
+              appBar: AppBar(
+                title: StreamBuilder(
+                  stream: _orderDetailBloc.id,
+                  builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+                    return snapshot.hasData
+                        ? Text('Pedido #${snapshot.data.toString()}')
+                        : Text('Nuevo pedido');
+                  },
+                ),
+                actions: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.keyboard_hide),
+                    onPressed: () {
+                      FocusScope.of(context).requestFocus(FocusNode());
+                    },
+                  )
+                ],
+                backgroundColor: _evaluateOrderColor(snapshot.data),
+                bottom: PreferredSize(
+                  preferredSize: Size(double.infinity, 1.0),
+                  child: StreamBuilder(
+                      stream: _orderDetailBloc.loading,
+                      builder:
+                          (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                        return snapshot.data != null && snapshot.data
+                            ? LinearProgressIndicator()
+                            : Container(
+                                child: null,
+                              );
+                      }),
+                ),
+              ),
+              body: StreamBuilder(
+                  stream: _orderDetailBloc.activeForm,
                   builder:
                       (BuildContext context, AsyncSnapshot<bool> snapshot) {
                     return snapshot.data != null && snapshot.data
-                        ? LinearProgressIndicator()
-                        : Container(
-                            child: null,
-                          );
+                        ? _editableForm()
+                        : _displayForm();
                   }),
-            ),
-          ),
-          body: StreamBuilder(
-              stream: _orderDetailBloc.activeForm,
-              builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-                return snapshot.data != null && snapshot.data
-                    ? _editableForm()
-                    : _displayForm();
-              }),
-          persistentFooterButtons: _evaluateActionButtons(snapshot.data),
-        );
+              persistentFooterButtons: _evaluateActionButtons(snapshot.data),
+            );
+        }
       },
     );
+  }
+
+  @override
+  void dispose() {
+    _orderDetailBloc.dispose();
+    super.dispose();
   }
 
   _displayForm() {
@@ -199,10 +213,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
             String stateName = "";
             switch (snapshot.data) {
-              case 'P':
+              case 'A':
                 stateName = 'Pendiente';
                 break;
-              case 'A':
+              case 'P':
                 stateName = 'Aprobado';
                 break;
               case 'X':
@@ -225,6 +239,19 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             return ListTile(
               title: Text(snapshot.hasData ? snapshot.data : ''),
               subtitle: Text('Observación'),
+              onTap: () {},
+            );
+          },
+        ),
+        Divider(),
+
+        /// Observation
+        StreamBuilder(
+          stream: _orderDetailBloc.commentary,
+          builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+            return ListTile(
+              title: Text(snapshot.hasData ? snapshot.data : ''),
+              subtitle: Text('Aprobación'),
               onTap: () {},
             );
           },
@@ -449,7 +476,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
         /// Detail list
         Container(
-          height: 400,
+          height: 300,
           color: Colors.white,
           child: StreamBuilder(
               stream: _orderDetailBloc.orderDetail,
@@ -526,13 +553,16 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     );
   }
 
-  _evaluateOrderColor(String state) {
-    if (state == 'P') return Colors.transparent;
-    if (state == 'A') return Colors.greenAccent;
-    if (state == 'X') return Colors.redAccent;
+  _evaluateOrderColor(Order order) {
+    if (order != null && order.state == 'A') return Colors.transparent;
+    if (order != null && order.state == 'P') return Colors.green;
+    if (order != null && order.state == 'X') return Colors.redAccent;
   }
 
-  _evaluateActionButtons(String state) {
+  _evaluateActionButtons(Order order) {
+    String state = '';
+    if (order != null) state = order.state;
+
     switch (state) {
 
       /// New order
@@ -569,7 +599,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         ];
 
       /// Pending order
-      case 'P':
+      case 'A':
         return [
           StreamBuilder<AccessByRole>(
               stream: _orderPageBloc.access,
@@ -624,7 +654,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                                 ),
                                 onPressed: () {
                                   _orderDetailBloc
-                                      .updatingOrder('A')
+                                      .updatingOrder('P')
                                       .then((orderUpdated) {
                                     if (orderUpdated != null)
                                       _orderPageBloc
@@ -661,7 +691,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                                 ),
                                 onPressed: () {
                                   _orderDetailBloc
-                                      .updatingOrder('P')
+                                      .updatingOrder('A')
                                       .then((orderUpdated) {
                                     if (orderUpdated != null) {
                                       _orderPageBloc
@@ -685,7 +715,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                       stream: _orderPageBloc.access,
                       builder: (BuildContext context,
                           AsyncSnapshot<AccessByRole> snapshot) {
-                        return snapshot.hasData && snapshot.data.edit == '1'
+                        return snapshot.hasData &&
+                                snapshot.data.edit == '1' &&
+                                order.userCreated ==
+                                    widget.authenticationBloc.userLogged.value
+                                        .user
                             ? RaisedButton(
                                 color: Colors.blueAccent,
                                 child: Text(
@@ -711,7 +745,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         ];
 
       /// Order approved
-      case 'A':
+      case 'P':
         return [
           StreamBuilder<AccessByRole>(
               stream: _orderPageBloc.access,
@@ -758,7 +792,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         ),
                         onPressed: () {
                           _orderDetailBloc
-                              .updatingOrder('A')
+                              .updatingOrder('P')
                               .then((orderUpdated) {
                             if (orderUpdated != null)
                               _orderPageBloc.updateOrderInList(orderUpdated);
