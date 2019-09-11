@@ -268,7 +268,7 @@ class _UserDrawerState extends State<UserDrawer> {
                 Container(
                   margin: EdgeInsets.only(right: 10.0),
                   child: Text(
-                    'v0.1.4',
+                    'v0.1.4+2',
                     style: TextStyle(
                         color: Colors.black, fontWeight: FontWeight.bold),
                   ),

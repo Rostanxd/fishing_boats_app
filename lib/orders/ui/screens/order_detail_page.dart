@@ -75,8 +75,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: _orderDetailBloc.order,
-      builder: (BuildContext context, AsyncSnapshot<Order> snapshot) {
-        switch (snapshot.connectionState) {
+      builder: (BuildContext context, AsyncSnapshot<Order> orderSnap) {
+        switch (orderSnap.connectionState) {
           case ConnectionState.waiting:
             return Scaffold(
               body: CircularProgressIndicator(),
@@ -88,19 +88,32 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   stream: _orderDetailBloc.id,
                   builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
                     return snapshot.hasData
-                        ? Text('Pedido #${snapshot.data.toString()}')
-                        : Text('Nuevo pedido');
+                        ? Text(
+                            'Pedido #${snapshot.data.toString()}',
+                            style: TextStyle(
+                                color: _evaluateTextColor(orderSnap.data)),
+                          )
+                        : Text(
+                            'Nuevo pedido',
+                            style: TextStyle(
+                                color: _evaluateTextColor(orderSnap.data)),
+                          );
                   },
                 ),
+                iconTheme:
+                    IconThemeData(color: _evaluateTextColor(orderSnap.data)),
                 actions: <Widget>[
                   IconButton(
-                    icon: Icon(Icons.keyboard_hide),
+                    icon: Icon(
+                      Icons.keyboard_hide,
+                      color: _evaluateTextColor(orderSnap.data),
+                    ),
                     onPressed: () {
                       FocusScope.of(context).requestFocus(FocusNode());
                     },
                   )
                 ],
-                backgroundColor: _evaluateOrderColor(snapshot.data),
+                backgroundColor: _evaluateOrderColor(orderSnap.data),
                 bottom: PreferredSize(
                   preferredSize: Size(double.infinity, 1.0),
                   child: StreamBuilder(
@@ -123,7 +136,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         ? _editableForm()
                         : _displayForm();
                   }),
-              persistentFooterButtons: _evaluateActionButtons(snapshot.data),
+              persistentFooterButtons: _evaluateActionButtons(orderSnap.data),
             );
         }
       },
@@ -287,7 +300,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         ),
         Divider(),
         Container(
-          height: 400,
+          height: 300,
           color: Colors.white,
           child: StreamBuilder(
               stream: _orderDetailBloc.orderDetail,
@@ -299,17 +312,18 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         itemCount: detailSnapshot.data.length,
                         itemBuilder: (BuildContext context, int index) {
                           return ListTile(
-                            leading: Icon(Icons.arrow_right),
                             title: detailSnapshot.data[index].detail != null &&
                                     detailSnapshot.data[index].detail.isNotEmpty
                                 ? Text(detailSnapshot.data[index].detail)
                                 : Text('N/A'),
-                            subtitle: detailSnapshot.data[index].quantity !=
+                            leading: detailSnapshot.data[index].quantity !=
                                         null &&
                                     detailSnapshot.data[index].quantity != 0
                                 ? Text(
-                                    'Cantidad ${ConversionDataType.doubleQuantityToString(detailSnapshot.data[index].quantity)}')
-                                : Text('N/A'),
+                                    '${ConversionDataType.doubleQuantityToString(detailSnapshot.data[index].quantity)}',
+                                    style: TextStyle(color: Colors.blueAccent))
+                                : Text('N/A',
+                                    style: TextStyle(color: Colors.blueAccent)),
                           );
                         },
                         separatorBuilder: (BuildContext context, int index) {
@@ -493,19 +507,22 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                             key: Key('${index.toString()}-'
                                 '${detailSnapshot.data[index].detail}'),
                             child: ListTile(
-                              leading: Icon(Icons.arrow_right),
                               title:
                                   detailSnapshot.data[index].detail != null &&
                                           detailSnapshot
                                               .data[index].detail.isNotEmpty
                                       ? Text(detailSnapshot.data[index].detail)
                                       : Text('N/A'),
-                              subtitle: detailSnapshot.data[index].quantity !=
+                              leading: detailSnapshot.data[index].quantity !=
                                           null &&
                                       detailSnapshot.data[index].quantity != 0
                                   ? Text(
-                                      'Cantidad ${ConversionDataType.doubleQuantityToString(detailSnapshot.data[index].quantity)}')
-                                  : Text('N/A'),
+                                      '${ConversionDataType.doubleQuantityToString(detailSnapshot.data[index].quantity)}',
+                                      style:
+                                          TextStyle(color: Colors.blueAccent))
+                                  : Text('N/A',
+                                      style:
+                                          TextStyle(color: Colors.blueAccent)),
                               trailing: Icon(Icons.more_vert),
                               onTap: () {
                                 Navigator.push(
@@ -555,8 +572,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     );
   }
 
+  _evaluateTextColor(Order order) {
+    if (order != null && order.state == 'A') return Colors.black;
+    return Colors.white;
+  }
+
   _evaluateOrderColor(Order order) {
-    if (order != null && order.state == 'A') return Colors.transparent;
+    if (order != null && order.state == 'A') return Colors.white;
     if (order != null && order.state == 'P') return Colors.green;
     if (order != null && order.state == 'X') return Colors.redAccent;
   }
@@ -638,7 +660,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   ? RaisedButton(
                       color: Colors.grey,
                       child: Text(
-                        'Procesar',
+                        'Aprobar',
                         style: TextStyle(color: Colors.white),
                       ),
                       onPressed: () {},
@@ -651,7 +673,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                             ? RaisedButton(
                                 color: Colors.green,
                                 child: Text(
-                                  'Procesar',
+                                  'Aprobar',
                                   style: TextStyle(color: Colors.white),
                                 ),
                                 onPressed: () {
@@ -669,7 +691,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                             : RaisedButton(
                                 color: Colors.grey,
                                 child: Text(
-                                  'Procesar',
+                                  'Aprobar',
                                   style: TextStyle(color: Colors.white),
                                 ),
                                 onPressed: () {},
@@ -791,7 +813,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     ? RaisedButton(
                         color: Colors.green,
                         child: Text(
-                          'Procesar',
+                          'Aprobar',
                           style: TextStyle(color: Colors.white),
                         ),
                         onPressed: () {
@@ -807,7 +829,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     : RaisedButton(
                         color: Colors.grey,
                         child: Text(
-                          'Procesar',
+                          'Aprobar',
                           style: TextStyle(color: Colors.white),
                         ),
                         onPressed: () {},
