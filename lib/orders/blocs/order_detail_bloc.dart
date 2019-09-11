@@ -57,7 +57,7 @@ class OrderDetailBloc extends BlocBase {
 
   Observable<String> get observation => _observation.stream;
 
-  Observable<String> get commentary => _commentary.stream;
+  ValueObservable<String> get commentary => _commentary.stream;
 
   Observable<String> get providerName => _providerName.stream;
 
@@ -171,6 +171,7 @@ class OrderDetailBloc extends BlocBase {
       _applicantSelected.sink.add(order.applicant);
       _state.sink.add(order.state);
       _observation.sink.add(order.observation);
+      _commentary.sink.add(order.commentary);
       _providerName.sink.add(order.providerName);
       _orderDetail.sink.add(order.detail);
       _activeForm.sink.add(false);
@@ -273,6 +274,12 @@ class OrderDetailBloc extends BlocBase {
       return null;
     }
 
+    if (stateToUpd == 'P' &&
+        (_commentary.value == null || _commentary.value == '')) {
+      _message.sink.add('Error: Falta llenar el comentario de aprobación.');
+      return null;
+    }
+
     String message;
     _loading.sink.add(true);
 
@@ -311,7 +318,7 @@ class OrderDetailBloc extends BlocBase {
     }, onError: (error) {
       _message.sink.add(error.toString());
       _loading.sink.add(false);
-      order =  null;
+      order = null;
     }).timeout(Duration(seconds: 15));
 
     return order;

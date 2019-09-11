@@ -7,6 +7,7 @@ import 'package:fishing_boats_app/orders/models/employed.dart';
 import 'package:fishing_boats_app/orders/models/order.dart';
 import 'package:fishing_boats_app/orders/models/warehouse.dart';
 import 'package:fishing_boats_app/orders/ui/screens/order_detail_line_page.dart';
+import 'package:fishing_boats_app/orders/ui/screens/order_process_page.dart';
 import 'package:fishing_boats_app/utils/conversion_data_type.dart';
 import 'package:fishing_boats_app/widgets/custom_circular_progress.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +41,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     _orderDetailBloc.loadStreamData(_order);
     _orderDetailBloc.changeUser(widget.authenticationBloc.userLogged.value);
     if (_order != null) _observationCtrl.text = _order.observation;
+    _orderDetailBloc.changeMessenger(null);
 
     /// Control the message in the dialog
     _orderDetailBloc.messenger.listen((message) {
@@ -186,7 +188,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               title: Text(snapshot.hasData && snapshot.data != null
                   ? '${snapshot.data.lastName.trim()} ${snapshot.data.firstName.trim()}'
                   : '-- Todas --'),
-              subtitle: Text('Aplicante'),
+              subtitle: Text('Solicitante'),
               onTap: () {},
             );
           },
@@ -653,13 +655,15 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                                   style: TextStyle(color: Colors.white),
                                 ),
                                 onPressed: () {
-                                  _orderDetailBloc
-                                      .updatingOrder('P')
-                                      .then((orderUpdated) {
-                                    if (orderUpdated != null)
-                                      _orderPageBloc
-                                          .updateOrderInList(orderUpdated);
-                                  });
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              OrderProcessPage(
+                                                orderPageBloc: _orderPageBloc,
+                                                orderDetailBloc:
+                                                    _orderDetailBloc,
+                                              )));
                                 },
                               )
                             : RaisedButton(
@@ -791,12 +795,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           style: TextStyle(color: Colors.white),
                         ),
                         onPressed: () {
-                          _orderDetailBloc
-                              .updatingOrder('P')
-                              .then((orderUpdated) {
-                            if (orderUpdated != null)
-                              _orderPageBloc.updateOrderInList(orderUpdated);
-                          });
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => OrderProcessPage(
+                                        orderPageBloc: _orderPageBloc,
+                                        orderDetailBloc: _orderDetailBloc,
+                                      )));
                         },
                       )
                     : RaisedButton(
