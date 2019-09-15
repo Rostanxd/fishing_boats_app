@@ -118,7 +118,8 @@ class OrderPageBloc extends Object implements BlocBase {
             _dateTo.value,
             _state.value,
             _observation.value,
-            _providerName.value)
+            _providerName.value,
+            _user.value)
         .timeout(Duration(seconds: 30))
         .then((data) {
       _orders.sink.add(data);

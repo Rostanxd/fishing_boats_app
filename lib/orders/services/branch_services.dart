@@ -13,7 +13,8 @@ class BranchApi {
     List data;
 
     final response = await _httpClient.get(
-        '${Connection.host}:${Connection.port}/orders/branches/$name',
+        '${Connection.host}:${Connection.port}/orders/branches/?'
+            'name=$name',
         headers: {
           "Content-type": "application/json",
           "charset": "utf-8",

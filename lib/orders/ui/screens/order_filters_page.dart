@@ -431,6 +431,8 @@ class WarehouseSearch extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    _orderPageBloc.changeWarehouseSearch(query);
+
     if (query.isEmpty) {
       return ListView(
         children: <Widget>[
@@ -452,8 +454,6 @@ class WarehouseSearch extends SearchDelegate<String> {
         ],
       );
     } else {
-      _orderPageBloc.changeWarehouseSearch(query);
-
       return StreamBuilder(
         stream: _orderPageBloc.warehouses,
         builder:
@@ -575,6 +575,8 @@ class BranchSearch extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    _orderPageBloc.changeBranchSearch(query);
+
     if (query.isEmpty && _orderPageBloc.userLogged.value.role.code == '01') {
       return ListView(
         children: <Widget>[
@@ -596,7 +598,6 @@ class BranchSearch extends SearchDelegate<String> {
         ],
       );
     } else {
-      _orderPageBloc.changeBranchSearch(query);
 
       return StreamBuilder(
         stream: _orderPageBloc.userLogged.value.role.code == '01'
@@ -716,6 +717,8 @@ class TravelSearch extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    _orderPageBloc.changeTravelSearch(query);
+
     if (query.isEmpty) {
       return ListView(
         children: <Widget>[
@@ -737,8 +740,6 @@ class TravelSearch extends SearchDelegate<String> {
         ],
       );
     } else {
-      _orderPageBloc.changeTravelSearch(query);
-
       return StreamBuilder(
         stream: _orderPageBloc.travels,
         builder:
@@ -858,6 +859,8 @@ class EmployedSearch extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    _orderPageBloc.changeApplicantSearch(query);
+
     if (query.isEmpty) {
       return ListView(
         children: <Widget>[
@@ -879,8 +882,6 @@ class EmployedSearch extends SearchDelegate<String> {
         ],
       );
     } else {
-      _orderPageBloc.changeApplicantSearch(query);
-
       return StreamBuilder(
         stream: _orderPageBloc.employees,
         builder:

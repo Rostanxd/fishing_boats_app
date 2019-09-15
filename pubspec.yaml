@@ -11,7 +11,7 @@ description: A flutter application for fishing boats.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 0.1.4+2
+version: 0.1.5+1
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -36,10 +36,17 @@ dependencies:
   # To provide detailed information about the device
   device_info: ^0.4.0+2
 
+  # Icon
+  flutter_launcher_icons: ^0.7.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/img/logo.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

@@ -123,7 +123,7 @@ class AuthenticationBloc extends Object implements BlocBase {
         .then((value) {
           userValid = value;
         })
-        .timeout(Duration(seconds: 15))
+        .timeout(Duration(seconds: 10))
         .catchError((error) {
           _userLogged.addError(error);
         });

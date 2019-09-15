@@ -39,9 +39,10 @@ class OrdersRepository {
           DateTime dateTo,
           String state,
           String obs,
-          String providerName) =>
+          String providerName,
+          User user) =>
       _orderApi.fetchOrders(id, warehouse, branch, travel, employed, dateFrom,
-          dateTo, state, obs, providerName);
+          dateTo, state, obs, providerName, user);
 
   Future<int> createOrder(Order order) => _orderApi.createOrder(order);
 

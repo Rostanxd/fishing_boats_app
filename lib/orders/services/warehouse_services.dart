@@ -10,7 +10,8 @@ class WarehouseApi {
     List data;
 
     final response = await http.get(
-        '${Connection.host}:${Connection.port}/orders/warehouses/$name');
+        '${Connection.host}:${Connection.port}/orders/warehouses/?'
+            'name=$name');
 
     if (response.statusCode == 200) {
       data = json.decode(utf8.decode(response.bodyBytes));
@@ -29,7 +30,8 @@ class WarehouseApi {
     List data;
 
     final response = await http.get(
-        '${Connection.host}:${Connection.port}/orders/travels/$name');
+        '${Connection.host}:${Connection.port}/orders/travels/?'
+            'name=$name');
 
     if (response.statusCode == 200) {
       data = json.decode(utf8.decode(response.bodyBytes));

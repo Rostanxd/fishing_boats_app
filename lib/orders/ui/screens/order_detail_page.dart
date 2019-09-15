@@ -743,9 +743,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           AsyncSnapshot<AccessByRole> snapshot) {
                         return snapshot.hasData &&
                                 snapshot.data.edit == '1' &&
-                                order.userCreated ==
+                                order.userCreated.toUpperCase() ==
                                     widget.authenticationBloc.userLogged.value
-                                        .user
+                                        .user.toUpperCase()
                             ? RaisedButton(
                                 color: Colors.blueAccent,
                                 child: Text(
@@ -913,62 +913,61 @@ class WarehouseSearch extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if (query.isEmpty) {
-      return ListView(
-        children: <Widget>[
-          Container(
-              margin: EdgeInsets.all(20.0),
-              child: Text(
-                'Ingrese el nombre de la bodega a buscar.',
-                style: TextStyle(fontSize: 16.0),
-              ))
-        ],
-      );
-    } else {
-      _orderDetailBloc.changeWarehouseSearch(query);
+//    if (query.isEmpty) {
+//      return ListView(
+//        children: <Widget>[
+//          Container(
+//              margin: EdgeInsets.all(20.0),
+//              child: Text(
+//                'Ingrese el nombre de la bodega a buscar.',
+//                style: TextStyle(fontSize: 16.0),
+//              ))
+//        ],
+//      );
+//    } else {
+    _orderDetailBloc.changeWarehouseSearch(query);
 
-      return StreamBuilder(
-        stream: _orderDetailBloc.warehouses,
-        builder:
-            (BuildContext context, AsyncSnapshot<List<Warehouse>> snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.waiting:
-              return centerCircularProgress();
-            default:
-              if (snapshot.hasError)
-                return Container(
-                  child: Text(snapshot.error.toString()),
-                );
-
-              if (!snapshot.hasData ||
-                  snapshot.data == null ||
-                  snapshot.data.length == 0)
-                return Container(
-                  margin: EdgeInsets.only(left: 10.0, top: 10.0),
-                  child: Text('Lo sentimos no existen coincidencias'),
-                );
-
-              return ListView.separated(
-                itemCount: snapshot.data.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return ListTile(
-                    title: Text(snapshot.data[index].name),
-                    trailing: Icon(Icons.check),
-                    onTap: () {
-                      _orderDetailBloc.changeWarehouse(snapshot.data[index]);
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  return Divider();
-                },
+    return StreamBuilder(
+      stream: _orderDetailBloc.warehouses,
+      builder: (BuildContext context, AsyncSnapshot<List<Warehouse>> snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return centerCircularProgress();
+          default:
+            if (snapshot.hasError)
+              return Container(
+                child: Text(snapshot.error.toString()),
               );
-          }
-        },
-      );
-    }
+
+            if (!snapshot.hasData ||
+                snapshot.data == null ||
+                snapshot.data.length == 0)
+              return Container(
+                margin: EdgeInsets.only(left: 10.0, top: 10.0),
+                child: Text('Lo sentimos no existen coincidencias'),
+              );
+
+            return ListView.separated(
+              itemCount: snapshot.data.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Text(snapshot.data[index].name),
+                  trailing: Icon(Icons.check),
+                  onTap: () {
+                    _orderDetailBloc.changeWarehouse(snapshot.data[index]);
+                    Navigator.pop(context);
+                  },
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) {
+                return Divider();
+              },
+            );
+        }
+      },
+    );
   }
+//  }
 }
 
 class BranchSearch extends SearchDelegate<String> {
@@ -1047,63 +1046,63 @@ class BranchSearch extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if (query.isEmpty && _orderDetailBloc.userLogged.value.role.code == '01') {
-      return ListView(
-        children: <Widget>[
-          Container(
-              margin: EdgeInsets.all(20.0),
-              child: Text(
-                'Ingrese el nombre del barco a buscar.',
-                style: TextStyle(fontSize: 16.0),
-              ))
-        ],
-      );
-    } else {
-      _orderDetailBloc.changeBranchSearch(query);
+//    if (query.isEmpty && _orderDetailBloc.userLogged.value.role.code == '01') {
+//      return ListView(
+//        children: <Widget>[
+//          Container(
+//              margin: EdgeInsets.all(20.0),
+//              child: Text(
+//                'Ingrese el nombre del barco a buscar.',
+//                style: TextStyle(fontSize: 16.0),
+//              ))
+//        ],
+//      );
+//    } else {
+    _orderDetailBloc.changeBranchSearch(query);
 
-      return StreamBuilder(
-        stream: _orderDetailBloc.userLogged.value.role.code == '01'
-            ? _orderDetailBloc.branches
-            : _orderDetailBloc.branchesByUser,
-        builder: (BuildContext context, AsyncSnapshot<List<Branch>> snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.waiting:
-              return centerCircularProgress();
-            default:
-              if (snapshot.hasError)
-                return Container(
-                  child: Text(snapshot.error.toString()),
-                );
-
-              if (!snapshot.hasData ||
-                  snapshot.data == null ||
-                  snapshot.data.length == 0)
-                return Container(
-                  margin: EdgeInsets.only(left: 10.0, top: 10.0),
-                  child: Text('Lo sentimos no existen coincidencias'),
-                );
-
-              return ListView.separated(
-                itemCount: snapshot.data.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return ListTile(
-                    title: Text(snapshot.data[index].name),
-                    trailing: Icon(Icons.check),
-                    onTap: () {
-                      _orderDetailBloc.changeBranch(snapshot.data[index]);
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  return Divider();
-                },
+    return StreamBuilder(
+      stream: _orderDetailBloc.userLogged.value.role.code == '01'
+          ? _orderDetailBloc.branches
+          : _orderDetailBloc.branchesByUser,
+      builder: (BuildContext context, AsyncSnapshot<List<Branch>> snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return centerCircularProgress();
+          default:
+            if (snapshot.hasError)
+              return Container(
+                child: Text(snapshot.error.toString()),
               );
-          }
-        },
-      );
-    }
+
+            if (!snapshot.hasData ||
+                snapshot.data == null ||
+                snapshot.data.length == 0)
+              return Container(
+                margin: EdgeInsets.only(left: 10.0, top: 10.0),
+                child: Text('Lo sentimos no existen coincidencias'),
+              );
+
+            return ListView.separated(
+              itemCount: snapshot.data.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Text(snapshot.data[index].name),
+                  trailing: Icon(Icons.check),
+                  onTap: () {
+                    _orderDetailBloc.changeBranch(snapshot.data[index]);
+                    Navigator.pop(context);
+                  },
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) {
+                return Divider();
+              },
+            );
+        }
+      },
+    );
   }
+//  }
 }
 
 class TravelSearch extends SearchDelegate<String> {
@@ -1179,62 +1178,61 @@ class TravelSearch extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if (query.isEmpty) {
-      return ListView(
-        children: <Widget>[
-          Container(
-              margin: EdgeInsets.all(20.0),
-              child: Text(
-                'Ingrese el nombre del viaje a buscar.',
-                style: TextStyle(fontSize: 16.0),
-              ))
-        ],
-      );
-    } else {
-      _orderDetailBloc.changeTravelSearch(query);
+//    if (query.isEmpty) {
+//      return ListView(
+//        children: <Widget>[
+//          Container(
+//              margin: EdgeInsets.all(20.0),
+//              child: Text(
+//                'Ingrese el nombre del viaje a buscar.',
+//                style: TextStyle(fontSize: 16.0),
+//              ))
+//        ],
+//      );
+//    } else {
+    _orderDetailBloc.changeTravelSearch(query);
 
-      return StreamBuilder(
-        stream: _orderDetailBloc.travels,
-        builder:
-            (BuildContext context, AsyncSnapshot<List<Warehouse>> snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.waiting:
-              return centerCircularProgress();
-            default:
-              if (snapshot.hasError)
-                return Container(
-                  child: Text(snapshot.error.toString()),
-                );
-
-              if (!snapshot.hasData ||
-                  snapshot.data == null ||
-                  snapshot.data.length == 0)
-                return Container(
-                  margin: EdgeInsets.only(left: 10.0, top: 10.0),
-                  child: Text('Lo sentimos no existen coincidencias'),
-                );
-
-              return ListView.separated(
-                itemCount: snapshot.data.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return ListTile(
-                    title: Text(snapshot.data[index].name),
-                    trailing: Icon(Icons.check),
-                    onTap: () {
-                      _orderDetailBloc.changeTravel(snapshot.data[index]);
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  return Divider();
-                },
+    return StreamBuilder(
+      stream: _orderDetailBloc.travels,
+      builder: (BuildContext context, AsyncSnapshot<List<Warehouse>> snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return centerCircularProgress();
+          default:
+            if (snapshot.hasError)
+              return Container(
+                child: Text(snapshot.error.toString()),
               );
-          }
-        },
-      );
-    }
+
+            if (!snapshot.hasData ||
+                snapshot.data == null ||
+                snapshot.data.length == 0)
+              return Container(
+                margin: EdgeInsets.only(left: 10.0, top: 10.0),
+                child: Text('Lo sentimos no existen coincidencias'),
+              );
+
+            return ListView.separated(
+              itemCount: snapshot.data.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Text(snapshot.data[index].name),
+                  trailing: Icon(Icons.check),
+                  onTap: () {
+                    _orderDetailBloc.changeTravel(snapshot.data[index]);
+                    Navigator.pop(context);
+                  },
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) {
+                return Divider();
+              },
+            );
+        }
+      },
+    );
   }
+//  }
 }
 
 class EmployedSearch extends SearchDelegate<String> {
@@ -1311,61 +1309,61 @@ class EmployedSearch extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if (query.isEmpty) {
-      return ListView(
-        children: <Widget>[
-          Container(
-              margin: EdgeInsets.all(20.0),
-              child: Text(
-                'Ingrese el nombre del solicitante a buscar.',
-                style: TextStyle(fontSize: 16.0),
-              ))
-        ],
-      );
-    } else {
-      _orderDetailBloc.changeEmployedSearch(query);
+//    if (query.isEmpty) {
+//      return ListView(
+//        children: <Widget>[
+//          Container(
+//              margin: EdgeInsets.all(20.0),
+//              child: Text(
+//                'Ingrese el nombre del solicitante a buscar.',
+//                style: TextStyle(fontSize: 16.0),
+//              ))
+//        ],
+//      );
+//    } else {
+    _orderDetailBloc.changeEmployedSearch(query);
 
-      return StreamBuilder(
-        stream: _orderDetailBloc.employees,
-        builder:
-            (BuildContext context, AsyncSnapshot<List<Employed>> snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.waiting:
-              return centerCircularProgress();
-            default:
-              if (snapshot.hasError)
-                return Container(
-                  child: Text(snapshot.error.toString()),
-                );
-
-              if (!snapshot.hasData ||
-                  snapshot.data == null ||
-                  snapshot.data.length == 0)
-                return Container(
-                  margin: EdgeInsets.only(left: 10.0, top: 10.0),
-                  child: Text('Lo sentimos no existen coincidencias'),
-                );
-
-              return ListView.separated(
-                itemCount: snapshot.data.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return ListTile(
-                    title: Text(
-                        '${snapshot.data[index].lastName} ${snapshot.data[index].firstName}'),
-                    trailing: Icon(Icons.check),
-                    onTap: () {
-                      _orderDetailBloc.changeApplicant(snapshot.data[index]);
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  return Divider();
-                },
+    return StreamBuilder(
+      stream: _orderDetailBloc.employees,
+      builder: (BuildContext context, AsyncSnapshot<List<Employed>> snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return centerCircularProgress();
+          default:
+            if (snapshot.hasError)
+              return Container(
+                child: Text(snapshot.error.toString()),
               );
-          }
-        },
-      );
-    }
+
+            if (!snapshot.hasData ||
+                snapshot.data == null ||
+                snapshot.data.length == 0)
+              return Container(
+                margin: EdgeInsets.only(left: 10.0, top: 10.0),
+                child: Text('Lo sentimos no existen coincidencias'),
+              );
+
+            return ListView.separated(
+              itemCount: snapshot.data.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Text(
+                      '${snapshot.data[index].lastName} ${snapshot.data[index].firstName}'),
+                  trailing: Icon(Icons.check),
+                  onTap: () {
+                    _orderDetailBloc.changeApplicant(snapshot.data[index]);
+                    Navigator.pop(context);
+                  },
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) {
+                return Divider();
+              },
+            );
+        }
+      },
+    );
   }
+//  }
 }
+

@@ -12,7 +12,8 @@ class EmployedApi {
     List data;
 
     final response = await _httpClient.get(
-        '${Connection.host}:${Connection.port}/orders/employees/$name/',
+        '${Connection.host}:${Connection.port}/orders/employees/?'
+            'name=$name',
         headers: {
           "Content-type": "application/json",
           "charset": "utf-8",

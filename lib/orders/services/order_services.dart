@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:fishing_boats_app/authentication/models/user.dart';
 import 'package:fishing_boats_app/models/connection.dart';
 import 'package:fishing_boats_app/orders/models/branch.dart';
 import 'package:fishing_boats_app/orders/models/employed.dart';
@@ -20,7 +21,8 @@ class OrderApi {
       DateTime dateTo,
       String state,
       String obs,
-      String providerName) async {
+      String providerName,
+      User user) async {
     String orderId = '';
     String warehouseId = warehouse != null ? warehouse.code : '';
     String branchId = branch != null ? branch.code : '';
@@ -46,7 +48,8 @@ class OrderApi {
             '&employed_id=$employedId'
             '&state=$state'
             '&observation=$obs'
-            '&provider_name=$providerName');
+            '&provider_name=$providerName'
+            '&user_code=${user.code}');
 
     if (response.statusCode == 200) {
       data = json.decode(utf8.decode(response.bodyBytes));
