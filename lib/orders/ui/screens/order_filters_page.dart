@@ -271,7 +271,7 @@ class _OrderFilterPageState extends State<OrderFilterPage> {
                           color: snapshot.data == 'A'
                               ? Colors.blueGrey
                               : Colors.grey,
-                          child: Text('Penientes'),
+                          child: Text('Pendientes'),
                           onPressed: () {
                             _orderPageBloc.changeState('A');
                           },
