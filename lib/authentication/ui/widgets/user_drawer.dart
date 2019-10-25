@@ -139,7 +139,7 @@ class _UserDrawerState extends State<UserDrawer> {
         Container(
           margin: EdgeInsets.only(right: 10.0),
           child: Text(
-            'v0.1.5+2',
+            'v0.1.5+3',
             style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
           ),
         )
@@ -203,7 +203,7 @@ class _UserDrawerState extends State<UserDrawer> {
                 Container(
                   margin: EdgeInsets.only(right: 10.0),
                   child: Text(
-                    'v0.1.5+2',
+                    'v0.1.5+3',
                     style: TextStyle(
                         color: Colors.black, fontWeight: FontWeight.bold),
                   ),
@@ -268,7 +268,7 @@ class _UserDrawerState extends State<UserDrawer> {
                 Container(
                   margin: EdgeInsets.only(right: 10.0),
                   child: Text(
-                    'v0.1.5+2',
+                    'v0.1.5+3',
                     style: TextStyle(
                         color: Colors.black, fontWeight: FontWeight.bold),
                   ),

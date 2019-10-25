@@ -504,8 +504,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         itemCount: detailSnapshot.data.length,
                         itemBuilder: (BuildContext context, int index) {
                           return Dismissible(
-                            key: Key('${index.toString()}-'
-                                '${detailSnapshot.data[index].detail}'),
+                            key: Key(UniqueKey().toString()),
                             child: ListTile(
                               title:
                                   detailSnapshot.data[index].detail != null &&
